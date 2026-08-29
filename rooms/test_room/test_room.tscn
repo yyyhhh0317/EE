@@ -28,10 +28,58 @@ offset_bottom = 40.0
 theme_override_font_sizes/font_size = 22
 text = "HP: 100/100"
 
-[node name="Hint" type="Label" parent="UILayer/HUD"]
+[node name="InstabilityLabel" type="Label" parent="UILayer/HUD"]
 layout_mode = 1
 offset_left = 16.0
 offset_top = 46.0
-offset_right = 700.0
-offset_bottom = 80.0
-text = "WASD 移动 · 鼠标瞄准 · 左键发射 · 空格冲刺 · Esc 返回主菜单"
+offset_right = 220.0
+offset_bottom = 66.0
+text = "失控值 0/100"
+
+[node name="InstabilityBar" type="ProgressBar" parent="UILayer/HUD"]
+layout_mode = 1
+offset_left = 16.0
+offset_top = 68.0
+offset_right = 216.0
+offset_bottom = 86.0
+max_value = 100.0
+value = 0.0
+show_percentage = false
+
+[node name="EssenceLabel" type="Label" parent="UILayer/HUD"]
+layout_mode = 1
+offset_left = 16.0
+offset_top = 92.0
+offset_right = 400.0
+offset_bottom = 116.0
+text = "怒精华 ×0   惧精华 ×0"
+
+[node name="StatusLabel" type="Label" parent="UILayer/HUD"]
+layout_mode = 1
+offset_left = 16.0
+offset_top = 120.0
+offset_right = 440.0
+offset_bottom = 142.0
+text = "怒叠层 0 · 惧叠层 0 · 攻击 12 · 移速 220"
+
+[node name="UnstableWarning" type="Label" parent="UILayer/HUD"]
+visible = false
+layout_mode = 1
+offset_left = 16.0
+offset_top = 146.0
+offset_right = 320.0
+offset_bottom = 168.0
+theme_override_colors/font_color = Color(1, 0.3, 0.3, 1)
+text = "⚠ 失控：持续掉血"
+
+[node name="Hint" type="Label" parent="UILayer/HUD"]
+layout_mode = 1
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 16.0
+offset_top = -34.0
+offset_right = 960.0
+offset_bottom = -8.0
+grow_vertical = 0
+text = "WASD 移动 · 鼠标瞄准 · 左键发射 · 空格冲刺 · Q 注射怒 · R 注射惧 · Esc 返回主菜单"

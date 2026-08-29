@@ -1,0 +1,13 @@
+{
+  "id": "mod_fear_speed",
+  "name": "恐惧疾走",
+  "type": "stat",
+  "stat": "move_speed",
+  "operation": "mult",
+  "value": 0.12,
+  "hooks": [],
+  "duration": 0.0,
+  "max_stacks": 5,
+  "tags": ["fear"],
+  "is_negative": false
+}

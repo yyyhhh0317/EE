@@ -13,7 +13,7 @@ var source: Node = null
 
 func _ready() -> void:
 	body_entered.connect(_on_body_entered)
-	body_sprite.texture = Placeholder.circle(3, Color.WHITE)
+	body_sprite.texture = Placeholder.circle(5, Color.WHITE)
 	body_sprite.modulate = Color(0.9, 0.95, 1.0)
 
 func setup(pos: Vector2, dir: Vector2, dmg: float, spd: float, src: Node) -> void:
@@ -34,5 +34,7 @@ func _physics_process(delta: float) -> void:
 func _on_body_entered(body: Node) -> void:
 	if body == source:
 		return
-	CombatResolver.deal_damage(body, damage, source)
+	var dealt := CombatResolver.deal_damage(body, damage, source)
+	if dealt > 0.0 and source != null and source.has_method("on_attack_hit"):
+		source.on_attack_hit(body)
 	queue_free()

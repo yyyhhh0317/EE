@@ -4,9 +4,9 @@ extends CharacterBody2D
 
 enum State { IDLE, CHASE, WINDUP }
 
-@export var move_speed: float = 120.0
-@export var detect_range: float = 320.0
-@export var attack_range: float = 42.0
+@export var move_speed: float = 140.0
+@export var detect_range: float = 360.0
+@export var attack_range: float = 52.0
 @export var attack_damage: float = 10.0
 @export var windup_time: float = 0.55
 @export var attack_cooldown: float = 0.8
@@ -23,7 +23,7 @@ var _attack_cd: float = 0.0
 
 func _ready() -> void:
 	add_to_group("enemy")
-	body_sprite.texture = Placeholder.circle(12, Color.WHITE)
+	body_sprite.texture = Placeholder.circle(20, Color.WHITE)
 	body_sprite.modulate = _base_color
 	health.died.connect(_on_died)
 	health.damaged.connect(_on_damaged)
@@ -48,7 +48,7 @@ func _find_player() -> Player:
 	var group := get_tree().get_nodes_in_group("player")
 	return group[0] as Player if not group.is_empty() else null
 
-func _chase(delta: float) -> void:
+func _chase(_delta: float) -> void:
 	if _player == null or not is_instance_valid(_player):
 		state = State.IDLE
 		return

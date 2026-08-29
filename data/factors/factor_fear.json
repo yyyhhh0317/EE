@@ -4,7 +4,7 @@
   "emotion": "fear",
   "color": "#5b2b8f",
   "keywords": ["恐惧", "隐身", "视野"],
-  "modifiers": [],
+  "modifiers": ["mod_fear_speed"],
   "skills": [],
   "instability_gain": 12.0,
   "description": "以恐惧为刃：潜行、背刺、惊扰。"

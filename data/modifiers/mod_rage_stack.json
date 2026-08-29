@@ -4,7 +4,7 @@
   "type": "stack",
   "stat": "attack",
   "operation": "add",
-  "value": 2.0,
+  "value": 3.0,
   "hooks": ["on_hit"],
   "duration": 0.0,
   "max_stacks": 10,

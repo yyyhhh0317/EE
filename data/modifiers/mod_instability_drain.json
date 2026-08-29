@@ -1,0 +1,13 @@
+{
+  "id": "mod_instability_drain",
+  "name": "失控侵蚀",
+  "type": "hook",
+  "stat": "",
+  "operation": "add",
+  "value": 4.0,
+  "hooks": ["on_tick"],
+  "duration": 0.0,
+  "max_stacks": 1,
+  "tags": ["instability"],
+  "is_negative": true
+}
