@@ -1,0 +1,10 @@
+# Godot 4 缓存与导入产物
+.godot/
+
+# 导出产物
+export/
+*.translation
+
+# 系统文件
+.DS_Store
+Thumbs.db

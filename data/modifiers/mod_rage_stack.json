@@ -1,0 +1,13 @@
+{
+  "id": "mod_rage_stack",
+  "name": "激怒叠层",
+  "type": "stack",
+  "stat": "attack",
+  "operation": "add",
+  "value": 2.0,
+  "hooks": ["on_hit"],
+  "duration": 0.0,
+  "max_stacks": 10,
+  "tags": ["rage"],
+  "is_negative": false
+}

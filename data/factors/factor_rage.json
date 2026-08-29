@@ -1,0 +1,11 @@
+{
+  "id": "factor_rage",
+  "name": "暴怒因子",
+  "emotion": "rage",
+  "color": "#e5484d",
+  "keywords": ["激怒", "狂暴", "震地"],
+  "modifiers": ["mod_rage_stack"],
+  "skills": [],
+  "instability_gain": 15.0,
+  "description": "越战越强的暴怒之力，代价是更快的失控。"
+}
