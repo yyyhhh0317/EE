@@ -27,6 +27,12 @@ func off(event_name: String, callback: Callable) -> void:
 func emit(event_name: String, payload: Variant = null) -> void:
 	event_emitted.emit(event_name, payload)
 	if _listeners.has(event_name):
-		# 复制一份，避免回调中增删订阅导致的遍历问题。
-		for cb: Callable in _listeners[event_name].duplicate():
+		var arr: Array = _listeners[event_name]
+		var invalid: Array = []
+		for cb: Callable in arr:
+			if not cb.is_valid():
+				invalid.append(cb)
+				continue
 			cb.call(payload)
+		for cb in invalid:
+			arr.erase(cb)
