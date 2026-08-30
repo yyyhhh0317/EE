@@ -8,6 +8,8 @@ const BASIC_ENEMY_SCENE := preload("res://enemies/basic_enemy.tscn")
 const BOSS_ENEMY_SCENE := preload("res://enemies/boss_enemy.tscn")
 const DAMAGE_NUMBER_SCENE := preload("res://combat/damage_number.tscn")
 const PICKUP_SCENE := preload("res://combat/pickup.tscn")
+const FLOAT_TEXT_SCENE := preload("res://combat/float_text.tscn")
+const BURST_SCENE := preload("res://combat/burst.tscn")
 
 const SHOP_ITEMS := [
 	{"name": "恢复 30 HP", "price": 15, "effect": "heal30"},
@@ -41,13 +43,12 @@ const STORY_CLOSING := "你击败了狂暴巨人，暴怒因子的源头暂时�
 @onready var room_container: Node2D = $RoomContainer
 @onready var fx_layer: Node2D = $FxLayer
 @onready var player: Player = $Player
-@onready var hp_label: Label = $UILayer/HUD/HP
-@onready var instability_label: Label = $UILayer/HUD/InstabilityLabel
-@onready var instability_bar: ProgressBar = $UILayer/HUD/InstabilityBar
-@onready var essence_label: Label = $UILayer/HUD/EssenceLabel
-@onready var status_label: Label = $UILayer/HUD/StatusLabel
-@onready var unstable_warning: Label = $UILayer/HUD/UnstableWarning
-@onready var currency_label: Label = $UILayer/HUD/CurrencyLabel
+@onready var console_hp_fill: ColorRect = $UILayer/HUD/Console/HPBar/Fill
+@onready var console_hp_text: Label = $UILayer/HUD/Console/HPBar/Text
+@onready var console_inst_fill: ColorRect = $UILayer/HUD/Console/InstBar/Fill
+@onready var console_inst_text: Label = $UILayer/HUD/Console/InstBar/Text
+@onready var console_info: Label = $UILayer/HUD/Console/Info
+@onready var console_status: Label = $UILayer/HUD/Console/Status
 @onready var room_progress_label: Label = $UILayer/HUD/RoomProgress
 @onready var interact_prompt: Label = $UILayer/HUD/InteractPrompt
 @onready var chapter_title: Label = $UILayer/HUD/ChapterTitle
@@ -69,16 +70,34 @@ func _ready() -> void:
 	EventBus.on("player.hp_changed", _on_player_hp_changed)
 	EventBus.on("run.instability_changed", _on_instability_changed)
 	EventBus.on("run.essence_changed", _on_essence_changed)
-	EventBus.on("run.unstable_state_changed", _on_unstable_state_changed)
 	EventBus.on("run.currency_changed", _on_currency_changed)
+	EventBus.on("fx.float_text", _on_float_text)
 	_on_instability_changed(RunManager.instability)
 	_on_essence_changed(RunManager.essence)
-	_on_unstable_state_changed(RunManager.is_unstable)
 	_on_currency_changed(RunManager.currency)
+	_apply_meta()
+	_on_player_hp_changed(player.health.hp)
 	_show_chapter_title()
 
 func _process(_delta: float) -> void:
 	_update_status()
+
+## 应用局外 meta 强化（最大生命 / 起始结晶 / 起始精华）。
+func _apply_meta() -> void:
+	var hp_bonus := MetaManager.get_level("max_hp") * 25
+	if hp_bonus > 0:
+		player.health.max_hp += hp_bonus
+		player.health.hp = player.health.max_hp
+		_on_player_hp_changed(player.health.hp)
+	player.projectile_damage += MetaManager.get_level("attack") * 3
+	player.move_speed *= 1.0 + 0.06 * MetaManager.get_level("move_speed")
+	var currency_bonus := MetaManager.get_level("start_currency") * 30
+	if currency_bonus > 0:
+		RunManager.gain_currency(currency_bonus)
+	for i in MetaManager.get_level("start_rage"):
+		RunManager.gain_essence("factor_rage")
+	for i in MetaManager.get_level("start_fear"):
+		RunManager.gain_essence("factor_fear")
 
 ## ---- 流程状态机 ----
 func _show_chapter_title() -> void:
@@ -131,7 +150,7 @@ func _load_room(room: Dictionary) -> void:
 			_enter_shop()
 		"event":
 			_enter_event()
-	room_progress_label.text = "阶段 %s" % RunManager.get_stage_progress()
+	room_progress_label.text = "阶段 %s · 种子 %d" % [RunManager.get_stage_progress(), RunManager.seed]
 
 func _room_cleared() -> void:
 	overlay_panel.visible = false
@@ -145,8 +164,9 @@ func _enter_story_close() -> void:
 	_show_overlay("", STORY_CLOSING + "\n\n按 E 继续")
 
 func _on_victory() -> void:
+	MetaManager.add_cores(10)
 	overlay_panel.visible = false
-	victory_label.text = "第 %d 章通关！" % RunManager.current_chapter
+	victory_label.text = "第 %d 章通关！ +10 核心" % RunManager.current_chapter
 	victory_panel.visible = true
 	run_state = RunState.VICTORY
 	_set_player_active(false)
@@ -166,14 +186,20 @@ func _spawn_combat(count: int) -> void:
 func _spawn_enemy() -> void:
 	var e: BasicEnemy = BASIC_ENEMY_SCENE.instantiate()
 	room_container.add_child(e)
-	var angle := randf() * TAU
-	var dist := randf_range(160.0, 260.0)
+	e.health.max_hp *= RunManager.get_difficulty_mult("hp")
+	e.health.hp = e.health.max_hp
+	e.attack_damage *= RunManager.get_difficulty_mult("damage")
+	var angle := RunManager.rng_randf() * TAU
+	var dist := RunManager.rng_randf_range(160.0, 260.0)
 	e.global_position = player.global_position + Vector2.from_angle(angle) * dist
 	_enemies_alive += 1
 
 func _spawn_boss() -> void:
 	var b: BossEnemy = BOSS_ENEMY_SCENE.instantiate()
 	room_container.add_child(b)
+	b.health.max_hp *= RunManager.get_difficulty_mult("hp")
+	b.health.hp = b.health.max_hp
+	b.charge_damage *= RunManager.get_difficulty_mult("damage")
 	b.global_position = player.global_position + Vector2(0, 200)
 
 func _enter_rest() -> void:
@@ -184,7 +210,7 @@ func _enter_shop() -> void:
 	_show_shop()
 
 func _enter_event() -> void:
-	_current_event = EVENTS[randi() % EVENTS.size()]
+	_current_event = EVENTS[RunManager.rng_randi_range(0, EVENTS.size() - 1)]
 	_show_event(_current_event)
 
 ## ---- 商店 / 事件 ----
@@ -262,7 +288,7 @@ func _on_entity_died(enemy: Node) -> void:
 	if enemy.is_in_group("boss"):
 		_enter_story_close()
 		return
-	RunManager.gain_currency(randi_range(3, 6))
+	RunManager.gain_currency(RunManager.rng_randi_range(3, 6))
 	var pos: Vector2 = enemy.global_position
 	_spawn_drop.call_deferred(pos)
 	_enemies_alive -= 1
@@ -270,7 +296,7 @@ func _on_entity_died(enemy: Node) -> void:
 		_room_cleared()
 
 func _spawn_drop(pos: Vector2) -> void:
-	var roll := randf()
+	var roll := RunManager.rng_randf()
 	var type := "factor_rage"
 	if roll < 0.4:
 		type = "factor_rage"
@@ -283,37 +309,61 @@ func _spawn_drop(pos: Vector2) -> void:
 	p.setup(type, pos)
 
 func _on_player_hp_changed(hp: float) -> void:
-	hp_label.text = "HP: %d/%d" % [int(hp), int(player.health.max_hp)]
+	var max_hp := player.health.max_hp
+	var ratio := hp / max_hp if max_hp > 0.0 else 0.0
+	_set_bar(console_hp_fill, ratio)
+	console_hp_text.text = "HP %d/%d" % [int(hp), int(max_hp)]
 
 func _on_instability_changed(value: float) -> void:
-	instability_bar.value = value
-	instability_label.text = "失控值 %d/%d" % [int(value), int(RunManager.INSTABILITY_MAX)]
+	_set_bar(console_inst_fill, value / RunManager.INSTABILITY_MAX)
+	console_inst_text.text = "失控 %d/%d" % [int(value), int(RunManager.INSTABILITY_MAX)]
 
-func _on_essence_changed(ess: Dictionary) -> void:
-	essence_label.text = "怒精华 ×%d   惧精华 ×%d" % [
-		int(ess.get("factor_rage", 0)), int(ess.get("factor_fear", 0)),
+func _on_essence_changed(_ess: Dictionary) -> void:
+	_update_info()
+
+func _on_currency_changed(_value: int) -> void:
+	_update_info()
+
+func _update_info() -> void:
+	console_info.text = "结晶 ×%d\n怒精华 ×%d · 惧精华 ×%d" % [
+		RunManager.currency,
+		RunManager.get_essence("factor_rage"),
+		RunManager.get_essence("factor_fear"),
 	]
 
-func _on_unstable_state_changed(unstable: bool) -> void:
-	unstable_warning.visible = unstable
+func _on_float_text(payload: Dictionary) -> void:
+	var text: String = payload.get("text", "")
+	var pos: Vector2 = payload.get("pos", Vector2.ZERO)
+	var color: Color = payload.get("color", Color.WHITE)
+	var ft: Label = FLOAT_TEXT_SCENE.instantiate()
+	fx_layer.add_child(ft)
+	ft.setup(text, pos, color)
+	var burst: Sprite2D = BURST_SCENE.instantiate()
+	fx_layer.add_child(burst)
+	burst.setup(pos, color)
 
-func _on_currency_changed(value: int) -> void:
-	currency_label.text = "结晶 ×%d" % value
+func _set_bar(fill: ColorRect, ratio: float) -> void:
+	var bg: Control = fill.get_parent() as Control
+	fill.size = Vector2(bg.size.x * clampf(ratio, 0.0, 1.0), bg.size.y)
+	fill.position = Vector2.ZERO
 
 func _update_status() -> void:
 	if not is_instance_valid(player):
 		return
 	var rage := player.mods.get_stacks("mod_rage_stack")
 	var fear := player.mods.get_stacks("mod_fear_speed")
-	status_label.text = "怒叠层 %d · 惧叠层 %d · 攻击 %.0f · 移速 %.0f" % [
-		rage, fear, player.get_effective_attack(), player.get_effective_move_speed(),
+	var state_text := "失控" if RunManager.is_unstable else "稳定"
+	console_status.text = "攻击 %d · 移速 %d\n怒叠层 %d · 惧叠层 %d\n状态：%s" % [
+		int(player.get_effective_attack()), int(player.get_effective_move_speed()),
+		rage, fear, state_text,
 	]
+	console_status.modulate = Color(1.0, 0.5, 0.5) if RunManager.is_unstable else Color.WHITE
 
 ## ---- 输入 ----
 func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("pause"):
 		get_viewport().set_input_as_handled()
-		GameManager.back_to_menu()
+		GameManager.back_to_lobby()
 		return
 	match run_state:
 		RunState.TITLE:

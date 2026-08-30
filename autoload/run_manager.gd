@@ -1,26 +1,37 @@
 extends Node
-## RunManager —— 单局运行状态：章节/房间/精华/货币/构筑/失控值。
-## M3：节点图二选一推进 + 货币；M2：注射/失控值/稳定剂。
+## RunManager —— 单局运行状态：章节/房间/精华/货币/构筑/失控值/种子/难度。
+## M4：种子化随机 + 难度层级；M3：节点图推进 + 货币；M2：注射/失控值。
 
 const INSTABILITY_OVERFLOW_THRESHOLD := 60.0
 const INSTABILITY_MAX := 100.0
 const STABILIZER_REDUCE := 20.0
 const REST_INSTABILITY_REDUCE := 25.0
 
+const DIFFICULTIES := [
+	{"name": "普通", "hp": 1.0, "damage": 1.0, "instability": 1.0},
+	{"name": "困难", "hp": 1.4, "damage": 1.3, "instability": 1.2},
+	{"name": "噩梦", "hp": 1.8, "damage": 1.6, "instability": 1.4},
+]
+
 var is_running: bool = false
 var current_chapter: int = 1
 var current_choice_index: int = 0
-var chapter_choices: Array = []  # [ [room, room], [room, room], ..., [boss] ]
+var chapter_choices: Array = []  # [ [room, room], ..., [boss] ]
+
+var seed: int = 0
+var difficulty: int = 0
+var _rng := RandomNumberGenerator.new()
 
 var instability: float = 0.0
+var instability_threshold: float = INSTABILITY_OVERFLOW_THRESHOLD
 var is_unstable: bool = false
 var essence: Dictionary = {}  # factor_id -> int
 var currency: int = 0
 
 var injected_factors: Array[String] = []
 
-## 开始一局（生成章节）。
-func start_run(chapter: int = 1) -> void:
+## 开始一局（可指定种子，0 = 随机）。
+func start_run(chapter: int = 1, seed_override: int = 0) -> void:
 	is_running = true
 	current_chapter = chapter
 	current_choice_index = 0
@@ -29,8 +40,13 @@ func start_run(chapter: int = 1) -> void:
 	essence.clear()
 	currency = 0
 	injected_factors.clear()
+	# 种子
+	seed = seed_override if seed_override != 0 else randi()
+	_rng.seed = seed
+	# 失控阈值（含 meta 抗性加成）
+	instability_threshold = INSTABILITY_OVERFLOW_THRESHOLD + MetaManager.get_level("instability_resist") * 15.0
 	chapter_choices = _generate_chapter(chapter)
-	EventBus.emit("run.started", {"chapter": chapter})
+	EventBus.emit("run.started", {"chapter": chapter, "seed": seed})
 	EventBus.emit("run.essence_changed", essence.duplicate())
 	EventBus.emit("run.instability_changed", instability)
 	EventBus.emit("run.currency_changed", currency)
@@ -42,23 +58,20 @@ func end_run() -> void:
 
 ## ---- 章节 / 节点图 ----
 func _generate_chapter(_chapter: int) -> Array:
-	# M3 垂直切片：固定节点图（每阶段二选一，末段 Boss）。
-	# 后续接入程序化生成 + 按章节配置怪物池。
+	# M4：结构固定，怪物数量由种子随机（后续换成完整程序化节点图）。
 	return [
-		[{"type": "combat", "count": 3}, {"type": "event"}],
-		[{"type": "combat", "count": 4}, {"type": "shop"}],
-		[{"type": "rest"}, {"type": "combat", "count": 5}],
-		[{"type": "combat", "count": 5}, {"type": "event"}],
+		[{"type": "combat", "count": rng_randi_range(2, 4)}, {"type": "event"}],
+		[{"type": "combat", "count": rng_randi_range(3, 5)}, {"type": "shop"}],
+		[{"type": "rest"}, {"type": "combat", "count": rng_randi_range(4, 6)}],
+		[{"type": "combat", "count": rng_randi_range(4, 6)}, {"type": "event"}],
 		[{"type": "boss"}],
 	]
 
-## 当前阶段的可选房间列表。
 func get_current_choices() -> Array:
 	if current_choice_index < chapter_choices.size():
 		return chapter_choices[current_choice_index]
 	return []
 
-## 选择某一项，推进到下一阶段，返回选中的房间。
 func select_room(option_index: int) -> Dictionary:
 	var choices := get_current_choices()
 	if option_index < 0 or option_index >= choices.size():
@@ -71,6 +84,27 @@ func is_run_complete() -> bool:
 
 func get_stage_progress() -> String:
 	return "%d/%d" % [current_choice_index + 1, chapter_choices.size()]
+
+## ---- 种子随机 ----
+func rng_randf() -> float:
+	return _rng.randf()
+
+func rng_randi_range(a: int, b: int) -> int:
+	return _rng.randi_range(a, b)
+
+func rng_randf_range(a: float, b: float) -> float:
+	return _rng.randf_range(a, b)
+
+## ---- 难度 ----
+func cycle_difficulty() -> void:
+	difficulty = (difficulty + 1) % DIFFICULTIES.size()
+
+func get_difficulty_name() -> String:
+	return DIFFICULTIES[clampi(difficulty, 0, DIFFICULTIES.size() - 1)]["name"]
+
+func get_difficulty_mult(key: String) -> float:
+	var d: Dictionary = DIFFICULTIES[clampi(difficulty, 0, DIFFICULTIES.size() - 1)]
+	return float(d.get(key, 1.0))
 
 ## ---- 因子精华 ----
 func gain_essence(factor_id: String) -> void:
@@ -106,7 +140,8 @@ func inject_factor(factor_id: String) -> void:
 		"modifiers": factor.get("modifiers", []),
 	})
 	EventBus.emit("run.essence_changed", essence.duplicate())
-	add_instability(float(factor.get("instability_gain", 0.0)))
+	var gain := float(factor.get("instability_gain", 0.0)) * get_difficulty_mult("instability")
+	add_instability(gain)
 
 ## ---- 稳定剂 / 失控值 ----
 func use_stabilizer() -> void:
@@ -122,7 +157,7 @@ func add_instability(amount: float) -> void:
 func _change_instability(delta: float) -> void:
 	instability = clampf(instability + delta, 0.0, INSTABILITY_MAX)
 	EventBus.emit("run.instability_changed", instability)
-	var should_unstable := instability >= INSTABILITY_OVERFLOW_THRESHOLD
+	var should_unstable := instability >= instability_threshold
 	if should_unstable != is_unstable:
 		is_unstable = should_unstable
 		EventBus.emit("run.unstable_state_changed", is_unstable)

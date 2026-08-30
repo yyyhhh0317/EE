@@ -7,6 +7,7 @@ extends Node
 enum State { BOOT, MAIN_MENU, RUN, GAME_OVER, VICTORY, META }
 
 const MENU_SCENE := "res://ui/main_menu/main_menu.tscn"
+const LOBBY_SCENE := "res://meta/lobby.tscn"
 const RUN_SCENE := "res://run/run.tscn"
 
 var current_state: State = State.BOOT
@@ -25,17 +26,27 @@ func change_state(new_state: State) -> void:
 	EventBus.emit("game.state_changed", new_state)
 	print("[GameManager] 状态 → ", State.keys()[new_state])
 
-## 从主菜单开始新的一局。
-func start_run() -> void:
-	RunManager.start_run()
+## 主菜单 → 大厅。
+func goto_lobby() -> void:
+	change_state(State.META)
+	SceneManager.goto(LOBBY_SCENE)
+
+## 大厅 → 主菜单。
+func goto_main_menu() -> void:
+	change_state(State.MAIN_MENU)
+	SceneManager.goto(MENU_SCENE)
+
+## 大厅选章节 → 开始一局。
+func start_chapter(chapter: int, seed: int = 0) -> void:
+	RunManager.start_run(chapter, seed)
 	change_state(State.RUN)
 	SceneManager.goto(RUN_SCENE)
 
-## 返回主菜单。
-func back_to_menu() -> void:
+## 一局结束（死亡 / 通关）→ 回大厅。
+func back_to_lobby() -> void:
 	RunManager.end_run()
-	change_state(State.MAIN_MENU)
-	SceneManager.goto(MENU_SCENE)
+	change_state(State.META)
+	SceneManager.goto(LOBBY_SCENE)
 
 ## 退出游戏。
 func quit_game() -> void:

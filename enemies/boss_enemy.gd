@@ -17,6 +17,7 @@ var _base_color := Color(0.85, 0.15, 0.2)
 
 @onready var health: HealthComponent = $Health
 @onready var body_sprite: Sprite2D = $Body
+@onready var health_bar: HealthBar = $HealthBar
 
 var state: State = State.CHASE
 var _player: Player = null
@@ -29,6 +30,7 @@ func _ready() -> void:
 	add_to_group("boss")
 	body_sprite.texture = Placeholder.circle(34, Color.WHITE)
 	body_sprite.modulate = _base_color
+	health_bar.set_value(health.hp / health.max_hp)
 	health.died.connect(_on_died)
 	health.damaged.connect(_on_damaged)
 
@@ -106,6 +108,7 @@ func take_damage(amount: float, _source: Node = null) -> void:
 	health.take_damage(amount)
 
 func _on_damaged(_amount: float, _new_hp: float) -> void:
+	health_bar.set_value(health.hp / health.max_hp)
 	body_sprite.modulate = Color.WHITE
 	var tween := create_tween()
 	tween.tween_property(body_sprite, "modulate", _base_color, 0.12)

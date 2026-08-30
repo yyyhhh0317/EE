@@ -4,8 +4,12 @@ extends Node
 
 const UPGRADES := [
 	{"id": "max_hp", "name": "生命强化", "desc": "每级 +25 最大生命", "cost": 5, "max_level": 4},
+	{"id": "attack", "name": "攻击强化", "desc": "每级 +3 攻击", "cost": 6, "max_level": 4},
+	{"id": "move_speed", "name": "移速强化", "desc": "每级 +6% 移速", "cost": 6, "max_level": 4},
 	{"id": "start_currency", "name": "起始结晶", "desc": "每级 +30 起始结晶", "cost": 6, "max_level": 3},
 	{"id": "start_rage", "name": "起始怒精华", "desc": "每级 +1 起始怒精华", "cost": 8, "max_level": 2},
+	{"id": "start_fear", "name": "起始惧精华", "desc": "每级 +1 起始惧精华", "cost": 8, "max_level": 2},
+	{"id": "instability_resist", "name": "失控抗性", "desc": "每级 +15 失控阈值", "cost": 7, "max_level": 3},
 ]
 
 var cores: int = 0

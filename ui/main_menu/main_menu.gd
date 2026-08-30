@@ -9,7 +9,7 @@ func _ready() -> void:
 	_quit_button.pressed.connect(_on_quit_pressed)
 
 func _on_start_pressed() -> void:
-	GameManager.start_run()
+	GameManager.goto_lobby()
 
 func _on_quit_pressed() -> void:
 	GameManager.quit_game()

@@ -1,0 +1,85 @@
+#!/usr/bin/env python3
+"""Recolor one base map into 8 emotion-themed variants (identical structure,
+only the colour grade / style changes). Chaotic uses a rainbow + glitch grade.
+Adds a pixel-art post-process (downscale to a pixel grid + nearest upscale).
+Outputs art/maps/<emotion>_map.png."""
+import os
+import colorsys
+from PIL import Image, ImageOps, ImageChops
+
+SRC = r'D:\yyy\EE\art\maps\base_map.png'
+OUT = r'D:\yyy\EE\art\maps'
+PIXEL_GRID = 128          # target pixel-block grid; smaller = chunkier
+QUANTIZE = 16             # palette size for the regular grades
+
+# 3-tone grades: (shadow/black, mid, highlight/white)  — matched to GDD theme colours.
+PALETTES = {
+    'joy':      ((150, 40, 80),  (255, 190, 90),  (255, 244, 180)),  # 明黄/亮粉
+    'rage':     ((70, 8, 8),     (210, 70, 25),   (255, 150, 60)),   # 暗红/橙
+    'sorrow':   ((26, 40, 62),   (110, 138, 162), (190, 206, 220)),  # 灰蓝
+    'fear':     ((12, 8, 22),     (98, 60, 122),   (170, 120, 190)), # 深黑/暗紫（稍提亮可读）
+    'disgust':  ((20, 46, 18),   (92, 116, 66),   (168, 152, 164)),  # 绿紫
+    'surprise': ((6, 6, 6),      (110, 110, 110), (255, 255, 255)),  # 高对比白
+    'anxiety':  ((58, 58, 68),   (138, 132, 152), (216, 210, 230)),  # 灰/浅紫
+}
+
+
+def pixelate(img, grid=PIXEL_GRID):
+    small = img.resize((grid, grid), Image.NEAREST)
+    return small.resize(img.size, Image.NEAREST)
+
+
+def rainbow_lut():
+    lut = []
+    for i in range(256):
+        h = (i / 255.0) * 1.2 % 1.0
+        s = 1.0
+        v = 0.25 + 0.75 * (i / 255.0)
+        r, g, b = colorsys.hsv_to_rgb(h, s, v)
+        lut.append((int(r * 255), int(g * 255), int(b * 255)))
+    return lut
+
+
+def chaos_variant(img, grid=PIXEL_GRID):
+    """Full-rainbow per-pixel-block grade: hue varies by position (so the whole
+    rainbow appears), brightness tracks the structure's luminance."""
+    small = img.convert('L').resize((grid, grid), Image.NEAREST)
+    s = small.load()
+    out = Image.new('RGB', (grid, grid))
+    o = out.load()
+    for y in range(grid):
+        for x in range(grid):
+            v = s[x, y]
+            h = ((x * 7 + y * 13) % 360) / 360.0
+            val = 0.30 + 0.70 * (v / 255.0)
+            r, g, b = colorsys.hsv_to_rgb(h, 1.0, val)
+            o[x, y] = (int(r * 255), int(g * 255), int(b * 255))
+    return out.resize(img.size, Image.NEAREST)
+
+
+def main():
+    img = Image.open(SRC).convert('RGB')
+    img.save(SRC)  # re-encode source as a real PNG (Pollinations returns JPEG bytes)
+    gray = pixelate(img.convert('L'))
+    w, h = img.size
+    print(f'base: {w}x{h}  grid={PIXEL_GRID}')
+
+    os.makedirs(OUT, exist_ok=True)
+
+    for name, (black, mid, white) in PALETTES.items():
+        graded = ImageOps.colorize(gray, black=black, white=white, mid=mid)
+        graded = graded.quantize(colors=QUANTIZE).convert('RGB')
+        out = os.path.join(OUT, f'{name}_map.png')
+        graded.save(out)
+        print(f'{name}_map.png  {graded.size}  palette={QUANTIZE}')
+
+    ch = chaos_variant(img)
+    out = os.path.join(OUT, 'chaos_map.png')
+    ch.save(out)
+    print(f'chaos_map.png  {ch.size}')
+
+    print('DONE')
+
+
+if __name__ == '__main__':
+    main()

@@ -88,6 +88,9 @@ func _on_injected(payload: Dictionary) -> void:
 	body_sprite.modulate = Color(1.5, 1.5, 1.5)
 	var tween := create_tween()
 	tween.tween_property(body_sprite, "modulate", _base_color, 0.2)
+	var factor_id := str(payload.get("factor_id", ""))
+	var fname := "怒因子" if factor_id == "factor_rage" else "惧因子"
+	EventBus.emit("fx.float_text", {"text": "注射 %s" % fname, "pos": global_position, "color": Color(0.6, 0.9, 1.0)})
 
 func _on_unstable_state_changed(unstable: bool) -> void:
 	if unstable:
@@ -142,7 +145,7 @@ func _on_damaged(_amount: float, _new_hp: float) -> void:
 func _on_health_died() -> void:
 	EventBus.emit("player.died", {})
 	set_physics_process(false)
-	GameManager.back_to_menu.call_deferred()
+	GameManager.back_to_lobby.call_deferred()
 
 func _shake(amount: float) -> void:
 	var tween := create_tween()

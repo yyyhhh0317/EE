@@ -30,9 +30,21 @@ func _apply_visual() -> void:
 func _on_body_entered(body: Node) -> void:
 	if not body.is_in_group("player"):
 		return
+	var pos := global_position
+	var text := ""
+	var color := Color.WHITE
 	match pickup_type:
 		"factor_rage", "factor_fear":
 			RunManager.gain_essence(pickup_type)
+			if pickup_type == "factor_rage":
+				text = "+1 怒精华"
+				color = Color(0.95, 0.4, 0.25)
+			else:
+				text = "+1 惧精华"
+				color = Color(0.6, 0.4, 0.9)
 		"stabilizer":
 			RunManager.use_stabilizer()
+			text = "-20 失控"
+			color = Color(0.4, 0.9, 0.6)
+	EventBus.emit("fx.float_text", {"text": text, "pos": pos, "color": color})
 	queue_free()
