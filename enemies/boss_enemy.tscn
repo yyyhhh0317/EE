@@ -1,13 +1,13 @@
 [gd_scene load_steps=4 format=3]
 
-[ext_resource type="Script" path="res://player/player.gd" id="1"]
+[ext_resource type="Script" path="res://enemies/boss_enemy.gd" id="1"]
 [ext_resource type="Script" path="res://combat/health.gd" id="2"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_1"]
-radius = 16.0
+radius = 30.0
 
-[node name="Player" type="CharacterBody2D"]
-collision_layer = 1
+[node name="BossEnemy" type="CharacterBody2D"]
+collision_layer = 2
 collision_mask = 0
 script = ExtResource("1")
 
@@ -16,15 +16,6 @@ shape = SubResource("CircleShape2D_1")
 
 [node name="Body" type="Sprite2D" parent="."]
 
-[node name="Muzzle" type="Sprite2D" parent="."]
-position = Vector2(26, 0)
-
 [node name="Health" type="Node" parent="."]
 script = ExtResource("2")
-max_hp = 100.0
-
-[node name="Camera2D" type="Camera2D" parent="."]
-position_smoothing_enabled = true
-position_smoothing_speed = 8.0
-ignore_rotation = true
-zoom = Vector2(1.6, 1.6)
+max_hp = 350.0

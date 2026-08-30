@@ -129,6 +129,11 @@ func take_raw_damage(amount: float) -> void:
 	health.take_damage(amount)
 	EventBus.emit("player.hp_changed", health.hp)
 
+## 恢复生命（休息房等）。
+func heal(amount: float) -> void:
+	health.heal(amount)
+	EventBus.emit("player.hp_changed", health.hp)
+
 func _on_damaged(_amount: float, _new_hp: float) -> void:
 	body_sprite.modulate = Color(1.0, 0.3, 0.3)
 	var tween := create_tween()
