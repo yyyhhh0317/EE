@@ -13,8 +13,12 @@ var source: Node = null
 
 func _ready() -> void:
 	body_entered.connect(_on_body_entered)
-	body_sprite.texture = Placeholder.circle(5, Color.WHITE)
-	body_sprite.modulate = Color(0.9, 0.95, 1.0)
+	body_sprite.texture = Placeholder.soft_glow(9, Color.WHITE)
+	body_sprite.modulate = Color(0.85, 0.95, 1.0)
+	var core := Sprite2D.new()
+	core.texture = Placeholder.circle(3, Color.WHITE)
+	core.modulate = Color(1, 1, 1)
+	add_child(core)
 
 func setup(pos: Vector2, dir: Vector2, dmg: float, spd: float, src: Node) -> void:
 	global_position = pos

@@ -1,25 +1,31 @@
 class_name HealthBar
 extends Node2D
-## 世界空间血条（挂在敌人头顶）。
+## 世界空间血条（挂在敌人头顶）：圆角背景 + 圆角填充 + 细描边。
 
 @export var bar_width: float = 44.0
-@export var bar_height: float = 6.0
-@export var bar_color: Color = Color(0.85, 0.2, 0.2, 0.95)
+@export var bar_height: float = 7.0
+@export var bar_color: Color = Color(0.92, 0.28, 0.3, 0.95)
 
-var _fill: ColorRect
+var _ratio: float = 1.0
 
 func _ready() -> void:
-	var bg := ColorRect.new()
-	bg.color = Color(0.05, 0.05, 0.06, 0.8)
-	bg.position = Vector2(-bar_width / 2.0, 0)
-	bg.size = Vector2(bar_width, bar_height)
-	add_child(bg)
-	_fill = ColorRect.new()
-	_fill.color = bar_color
-	_fill.position = Vector2(-bar_width / 2.0, 0)
-	_fill.size = Vector2(bar_width, bar_height)
-	add_child(_fill)
+	queue_redraw()
 
 func set_value(ratio: float) -> void:
-	if _fill != null:
-		_fill.size.x = bar_width * clampf(ratio, 0.0, 1.0)
+	_ratio = clampf(ratio, 0.0, 1.0)
+	queue_redraw()
+
+func _draw() -> void:
+	var r := bar_height * 0.5
+	var bg := StyleBoxFlat.new()
+	bg.bg_color = Color(0.02, 0.02, 0.05, 0.72)
+	bg.border_color = Color(1, 1, 1, 0.18)
+	bg.set_border_width_all(1)
+	bg.set_corner_radius_all(int(r))
+	draw_style_box(bg, Rect2(-bar_width * 0.5, -r, bar_width, bar_height))
+	if _ratio > 0.0:
+		var w := maxf(bar_width * _ratio, 2.0)
+		var fill := StyleBoxFlat.new()
+		fill.bg_color = bar_color
+		fill.set_corner_radius_all(int(maxf(1.0, r - 1.0)))
+		draw_style_box(fill, Rect2(-bar_width * 0.5 + 1.0, -r + 1.0, w - 2.0, bar_height - 2.0))

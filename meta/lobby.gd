@@ -1,17 +1,25 @@
 extends Control
 ## 大厅（局外 Hub）：选章节 + 难度 + 种子 + 商店（meta 强化）+ 返回主菜单。
+## 视觉：渐变背景 + 漂浮因子光球 + 圆角卡片。
 
+@onready var title_label: Label = $Title
 @onready var cores_label: Label = $CoresLabel
 @onready var difficulty_button: Button = $BottomButtons/DifficultyButton
 @onready var shop_button: Button = $BottomButtons/ShopButton
 @onready var back_button: Button = $BottomButtons/BackButton
+@onready var seed_label: Label = $SeedBox/SeedLabel
 @onready var seed_input: LineEdit = $SeedBox/SeedInput
-@onready var shop_panel: ColorRect = $ShopPanel
+@onready var shop_panel: Panel = $ShopPanel
+@onready var shop_card: Panel = $ShopPanel/ShopCard
+@onready var shop_title: Label = $ShopPanel/ShopTitle
 @onready var shop_body: Label = $ShopPanel/ShopBody
 
 var _shop_open: bool = false
 
 func _ready() -> void:
+	theme = UITheme.build_theme()
+	_setup_background()
+	_style()
 	for i in range(1, 9):
 		var btn: Button = get_node("ChaptersVBox/Chapter%d" % i)
 		btn.pressed.connect(_on_chapter_pressed.bind(i))
@@ -20,6 +28,32 @@ func _ready() -> void:
 	back_button.pressed.connect(_on_back_pressed)
 	_update_ui()
 
+func _setup_background() -> void:
+	var bg := TextureRect.new()
+	bg.texture = Placeholder.vertical_gradient(256, UITheme.BG_DEEP, Color("13132b"))
+	bg.set_anchors_preset(Control.PRESET_FULL_RECT)
+	bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(bg)
+	move_child(bg, 0)
+	var orbs := FloatingBackground.new()
+	orbs.orb_count = 16
+	add_child(orbs)
+	move_child(orbs, 1)
+	var vig := TextureRect.new()
+	vig.texture = Placeholder.vignette(256, 0.55, 0.85)
+	vig.set_anchors_preset(Control.PRESET_FULL_RECT)
+	vig.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(vig)
+
+func _style() -> void:
+	UITheme.label(title_label, 40, UITheme.CYAN, 7, 3)
+	UITheme.label(cores_label, 22, UITheme.GOLD)
+	UITheme.label(seed_label, 16, UITheme.TEXT_DIM)
+	UITheme.label(shop_title, 30, UITheme.CYAN, 7, 3)
+	UITheme.label(shop_body, 18, UITheme.TEXT)
+	shop_panel.add_theme_stylebox_override("panel", UITheme.stylebox(Color(0.04, 0.04, 0.09, 0.9), Color(0, 0, 0, 0), 0, 0, 0))
+	shop_card.add_theme_stylebox_override("panel", UITheme.stylebox(UITheme.PANEL, UITheme.CYAN, 16, 1, 28))
+
 func _update_ui() -> void:
 	cores_label.text = "核心 ×%d" % MetaManager.cores
 	difficulty_button.text = "难度：%s" % RunManager.get_difficulty_name()
@@ -27,6 +61,9 @@ func _update_ui() -> void:
 		var btn: Button = get_node("ChaptersVBox/Chapter%d" % i)
 		btn.disabled = i > 1
 		btn.text = "第 %d 章 · 暴怒" % i if i == 1 else "第 %d 章 · 未解锁" % i
+		if i == 1:
+			btn.add_theme_color_override("font_color", UITheme.RAGE)
+			btn.add_theme_color_override("font_hover_color", Color.WHITE)
 	_refresh_shop()
 
 func _on_chapter_pressed(chapter: int) -> void:

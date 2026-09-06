@@ -106,6 +106,9 @@ def main():
         canvas = add_ring(canvas)
     canvas = canvas.resize((target, target), Image.LANCZOS)
     canvas.save(dst)
+    imp = dst + '.import'
+    if os.path.exists(imp):
+        os.remove(imp)
     print(f'saved {dst} ({target}x{target}, ring={ring}) from bbox {bbox}')
 
 

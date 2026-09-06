@@ -21,35 +21,36 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+mouse_filter = 2
 
-[node name="Console" type="ColorRect" parent="UILayer/HUD"]
+[node name="Console" type="Panel" parent="UILayer/HUD"]
 layout_mode = 1
 offset_left = 12.0
 offset_top = 12.0
-offset_right = 340.0
-offset_bottom = 290.0
-color = Color(0.05, 0.06, 0.09, 0.82)
+offset_right = 368.0
+offset_bottom = 300.0
+mouse_filter = 2
 
 [node name="Title" type="Label" parent="UILayer/HUD/Console"]
 layout_mode = 1
-offset_left = 14.0
+offset_left = 18.0
 offset_top = 8.0
-offset_right = 326.0
-offset_bottom = 30.0
-theme_override_colors/font_color = Color(0.7, 0.85, 1, 1)
+offset_right = 350.0
+offset_bottom = 34.0
+theme_override_colors/font_color = Color(0.55, 0.82, 1, 1)
 theme_override_font_sizes/font_size = 16
 text = "◆ 状态控制台"
 
-[node name="HPBar" type="ColorRect" parent="UILayer/HUD/Console"]
+[node name="HPBar" type="Panel" parent="UILayer/HUD/Console"]
 layout_mode = 1
-offset_left = 14.0
-offset_top = 36.0
-offset_right = 326.0
-offset_bottom = 58.0
-color = Color(0.12, 0.12, 0.16, 1)
+offset_left = 18.0
+offset_top = 40.0
+offset_right = 350.0
+offset_bottom = 68.0
 
 [node name="Fill" type="ColorRect" parent="UILayer/HUD/Console/HPBar"]
-color = Color(0.3, 0.85, 0.45, 1)
+layout_mode = 1
+color = Color(0.29, 0.85, 0.5, 1)
 
 [node name="Text" type="Label" parent="UILayer/HUD/Console/HPBar"]
 layout_mode = 1
@@ -62,16 +63,16 @@ text = "HP 100/100"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="InstBar" type="ColorRect" parent="UILayer/HUD/Console"]
+[node name="InstBar" type="Panel" parent="UILayer/HUD/Console"]
 layout_mode = 1
-offset_left = 14.0
-offset_top = 64.0
-offset_right = 326.0
-offset_bottom = 78.0
-color = Color(0.12, 0.12, 0.16, 1)
+offset_left = 18.0
+offset_top = 76.0
+offset_right = 350.0
+offset_bottom = 96.0
 
 [node name="Fill" type="ColorRect" parent="UILayer/HUD/Console/InstBar"]
-color = Color(0.72, 0.45, 0.95, 1)
+layout_mode = 1
+color = Color(0.69, 0.45, 0.96, 1)
 
 [node name="Text" type="Label" parent="UILayer/HUD/Console/InstBar"]
 layout_mode = 1
@@ -87,33 +88,45 @@ vertical_alignment = 1
 
 [node name="Info" type="Label" parent="UILayer/HUD/Console"]
 layout_mode = 1
-offset_left = 14.0
-offset_top = 86.0
-offset_right = 326.0
-offset_bottom = 128.0
+offset_left = 18.0
+offset_top = 104.0
+offset_right = 350.0
+offset_bottom = 150.0
 text = "结晶 ×0\n怒精华 ×0 · 惧精华 ×0"
 
 [node name="Status" type="Label" parent="UILayer/HUD/Console"]
 layout_mode = 1
-offset_left = 14.0
-offset_top = 132.0
-offset_right = 326.0
-offset_bottom = 215.0
+offset_left = 18.0
+offset_top = 156.0
+offset_right = 350.0
+offset_bottom = 240.0
 text = "攻击 12 · 移速 220\n怒叠层 0 · 惧叠层 0\n状态：稳定"
+
+[node name="RoomPill" type="Panel" parent="UILayer/HUD"]
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -268.0
+offset_top = 8.0
+offset_right = -8.0
+offset_bottom = 54.0
+grow_horizontal = 0
+mouse_filter = 2
 
 [node name="RoomProgress" type="Label" parent="UILayer/HUD"]
 layout_mode = 1
 anchors_preset = 1
 anchor_left = 1.0
 anchor_right = 1.0
-offset_left = -120.0
-offset_top = 12.0
+offset_left = -260.0
+offset_top = 14.0
 offset_right = -16.0
-offset_bottom = 40.0
+offset_bottom = 48.0
 grow_horizontal = 0
-theme_override_font_sizes/font_size = 22
 text = "阶段 1/5"
 horizontal_alignment = 2
+vertical_alignment = 1
 
 [node name="InteractPrompt" type="Label" parent="UILayer/HUD"]
 visible = false
@@ -126,12 +139,12 @@ anchor_bottom = 0.5
 offset_left = -320.0
 offset_top = 150.0
 offset_right = 320.0
-offset_bottom = 190.0
+offset_bottom = 196.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_font_sizes/font_size = 24
 text = "按 E 继续"
 horizontal_alignment = 1
+vertical_alignment = 1
 
 [node name="Hint" type="Label" parent="UILayer/HUD"]
 layout_mode = 1
@@ -139,10 +152,12 @@ anchors_preset = 2
 anchor_top = 1.0
 anchor_bottom = 1.0
 offset_left = 16.0
-offset_top = -34.0
+offset_top = -36.0
 offset_right = 1120.0
 offset_bottom = -8.0
 grow_vertical = 0
+theme_override_colors/font_color = Color(0.62, 0.62, 0.75, 1)
+theme_override_font_sizes/font_size = 13
 text = "WASD 移动 · 鼠标瞄准 · 左键发射 · 空格冲刺 · Q 注射怒 · R 注射惧 · E 交互 · Esc 返回大厅"
 
 [node name="ChapterTitle" type="Label" parent="UILayer/HUD"]
@@ -159,7 +174,6 @@ offset_right = 400.0
 offset_bottom = 40.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_font_sizes/font_size = 56
 text = "第 1 章 · 暴怒因子"
 horizontal_alignment = 1
 vertical_alignment = 1
@@ -172,7 +186,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-color = Color(0, 0, 0, 0.65)
+color = Color(0, 0, 0, 0.68)
 
 [node name="VictoryLabel" type="Label" parent="UILayer/HUD/VictoryPanel"]
 layout_mode = 1
@@ -187,7 +201,6 @@ offset_right = 400.0
 offset_bottom = 40.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_font_sizes/font_size = 56
 text = "章节通关！"
 horizontal_alignment = 1
 vertical_alignment = 1
@@ -205,7 +218,6 @@ offset_right = 400.0
 offset_bottom = 60.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_font_sizes/font_size = 22
 text = "按 Esc 返回大厅"
 horizontal_alignment = 1
 vertical_alignment = 1
@@ -218,7 +230,22 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-color = Color(0, 0, 0, 0.72)
+color = Color(0, 0, 0, 0.74)
+
+[node name="OverlayCard" type="Panel" parent="UILayer/HUD/OverlayPanel"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -560.0
+offset_top = -250.0
+offset_right = 560.0
+offset_bottom = 220.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
 
 [node name="OverlayTitle" type="Label" parent="UILayer/HUD/OverlayPanel"]
 layout_mode = 1
@@ -230,10 +257,9 @@ anchor_bottom = 0.5
 offset_left = -400.0
 offset_top = -220.0
 offset_right = 400.0
-offset_bottom = -170.0
+offset_bottom = -168.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_font_sizes/font_size = 34
 text = ""
 horizontal_alignment = 1
 vertical_alignment = 1
@@ -245,13 +271,12 @@ anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -500.0
+offset_left = -520.0
 offset_top = -140.0
-offset_right = 500.0
-offset_bottom = 200.0
+offset_right = 520.0
+offset_bottom = 190.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_font_sizes/font_size = 22
 text = ""
 horizontal_alignment = 1
 vertical_alignment = 1

@@ -14,7 +14,10 @@ extends CharacterBody2D
 const PROJECTILE_SCENE := preload("res://combat/projectile.tscn")
 const TICK_INTERVAL := 1.0  # on_tick 行为钩子触发间隔（秒）
 
-var _base_color := Color(0.35, 0.8, 0.95)  # 青色
+var _base_color := Color(0.35, 0.8, 0.95)  # 正常 tint（真实素材时为白）
+var _front_tex: Texture2D
+var _back_tex: Texture2D
+var _aim_dir := Vector2.RIGHT
 
 var mods: ModifierSystem
 
@@ -33,7 +36,7 @@ var _tick_timer: float = 0.0
 func _ready() -> void:
 	add_to_group("player")
 	mods = ModifierSystem.new()
-	_apply_placeholder_textures()
+	_apply_art()
 	health.damaged.connect(_on_damaged)
 	health.died.connect(_on_health_died)
 	EventBus.on("run.injected", _on_injected)
@@ -102,10 +105,23 @@ func _on_unstable_state_changed(unstable: bool) -> void:
 func _aim() -> void:
 	var dir := (get_global_mouse_position() - global_position).normalized()
 	if dir.length_squared() > 0.01:
-		rotation = dir.angle()
+		_aim_dir = dir
+	_update_facing()
+
+func _update_facing() -> void:
+	if is_instance_valid(muzzle):
+		muzzle.position = _aim_dir * 30.0
+	if _front_tex == null:
+		return
+	if absf(_aim_dir.x) > absf(_aim_dir.y):
+		body_sprite.texture = _front_tex
+		body_sprite.flip_h = _aim_dir.x < 0.0
+	else:
+		body_sprite.flip_h = false
+		body_sprite.texture = _back_tex if _aim_dir.y < 0.0 else _front_tex
 
 func _start_dash(input: Vector2) -> void:
-	_dash_dir = input.normalized() if input != Vector2.ZERO else Vector2.RIGHT.rotated(rotation)
+	_dash_dir = input.normalized() if input != Vector2.ZERO else _aim_dir
 	_dash_timer = dash_time
 	_dash_cd = dash_cooldown
 	_invincible_timer = dash_time + 0.1
@@ -113,7 +129,7 @@ func _start_dash(input: Vector2) -> void:
 
 func _fire() -> void:
 	_fire_cd = fire_rate
-	var dir := Vector2.RIGHT.rotated(rotation)
+	var dir := _aim_dir
 	var p: Projectile = PROJECTILE_SCENE.instantiate()
 	get_tree().current_scene.add_child(p)
 	p.setup(global_position + dir * 28.0, dir, get_effective_attack(), projectile_speed, self)
@@ -154,8 +170,16 @@ func _shake(amount: float) -> void:
 		tween.tween_property(camera, "offset", off, 0.02)
 	tween.tween_property(camera, "offset", Vector2.ZERO, 0.04)
 
-func _apply_placeholder_textures() -> void:
-	body_sprite.texture = Placeholder.circle(20, Color.WHITE)
+func _apply_art() -> void:
+	_front_tex = Art.hero_front()
+	_back_tex = Art.hero_back()
+	if _front_tex != null:
+		_base_color = Color.WHITE
+		Art.fit_sprite(body_sprite, _front_tex, 52.0)
+	else:
+		_base_color = Color(0.35, 0.8, 0.95)
+		body_sprite.texture = Placeholder.orb(20, Color.WHITE)
+		body_sprite.scale = Vector2.ONE
 	body_sprite.modulate = _base_color
-	muzzle.texture = Placeholder.circle(7, Color.WHITE)
+	muzzle.texture = Placeholder.soft_glow(7, Color.WHITE)
 	muzzle.modulate = Color.WHITE

@@ -8,7 +8,9 @@
 
 ## 已完成的接入
 
-- 桥接脚本：`mcp/pollinations-imagegen.mjs`（零依赖 Node，直连 `image.pollinations.ai`，Flux 模型）
+- 桥接脚本：`mcp/pollinations-imagegen.mjs`（Node，直连 `image.pollinations.ai`，Flux 模型）
+  - **输出一定是真 PNG**：接口返回的通常是 JPEG，桥会用 `sharp`（位于 dsh profile 的 node_modules）
+    重编码成 PNG 再写盘，避免「JPEG 字节配 .png 后缀」导致 Godot 首见导入失败。
 - 已写入 DSH profile 配置：`C:\Users\17801\.dsh\profiles\web\cordis.patch.yml`
 
 ## 你只需要做 1 步

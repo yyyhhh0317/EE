@@ -2,7 +2,7 @@ extends Node2D
 ## Run —— 单局场景：持久持有玩家与 HUD，按房间切换 RoomContainer 内容。
 ## 房间类型：combat / rest / shop / event / boss；节点图二选一 + 章节首尾剧情。
 
-enum RunState { TITLE, STORY_OPEN, CHOICE, ROOM, CLEARED, STORY_CLOSE, VICTORY }
+enum RunState { TITLE, STORY_OPEN, CHOICE, ROOM, EVENT_RESULT, SHOP_RESULT, CLEARED, STORY_CLOSE, VICTORY }
 
 const BASIC_ENEMY_SCENE := preload("res://enemies/basic_enemy.tscn")
 const BOSS_ENEMY_SCENE := preload("res://enemies/boss_enemy.tscn")
@@ -35,6 +35,46 @@ const EVENTS := [
 			{"text": "稳妥关闭", "effect": "shutdown"},
 		],
 	},
+	{
+		"title": "废弃的修复舱",
+		"text": "一具还能亮灯的修复舱，\n舱内残留着半透明的营养液。",
+		"options": [
+			{"text": "进入修复", "effect": "heal_full"},
+			{"text": "超载激活", "effect": "max_hp_up"},
+		],
+	},
+	{
+		"title": "恐惧标本室",
+		"text": "一排浸泡着『恐惧因子』的标本罐，\n液面下仿佛有什么在缓缓游动。",
+		"options": [
+			{"text": "采集惧因子", "effect": "essence_fear2"},
+			{"text": "吸收残存能量", "effect": "speed_up"},
+		],
+	},
+	{
+		"title": "暴怒注射器阵列",
+		"text": "整面墙的自动注射臂仍在滴落『怒因子』，\n针尖寒光毕露。",
+		"options": [
+			{"text": "全部注入", "effect": "essence_rage2"},
+			{"text": "吸收残留怒意", "effect": "attack_up"},
+		],
+	},
+	{
+		"title": "混沌培养皿",
+		"text": "一尊密封的混沌培养皿，\n内部翻涌着无法辨认的色彩。",
+		"options": [
+			{"text": "注入混沌", "effect": "chaos_gamble"},
+			{"text": "谨慎观察", "effect": "shutdown_minor"},
+		],
+	},
+	{
+		"title": "濒死的受试者",
+		"text": "一名奄奄一息的受试者靠在墙角，\n身上的注射端口还连着精华袋。",
+		"options": [
+			{"text": "救助他", "effect": "rescue"},
+			{"text": "掠夺他的物资", "effect": "loot"},
+		],
+	},
 ]
 
 const STORY_OPENING := "第 1 章 · 暴怒\n\n这片区域的生物被过量注射了『暴怒因子』，\n变得狂暴嗜血、无差别攻击一切。\n\n作为零号受试者，清理失控体、回收因子精华，\n查明失控实验背后的真相。"
@@ -57,6 +97,12 @@ const STORY_CLOSING := "你击败了狂暴巨人，暴怒因子的源头暂时�
 @onready var overlay_panel: ColorRect = $UILayer/HUD/OverlayPanel
 @onready var overlay_title: Label = $UILayer/HUD/OverlayPanel/OverlayTitle
 @onready var overlay_body: Label = $UILayer/HUD/OverlayPanel/OverlayBody
+@onready var console: Panel = $UILayer/HUD/Console
+@onready var hp_bar_bg: Panel = $UILayer/HUD/Console/HPBar
+@onready var inst_bar_bg: Panel = $UILayer/HUD/Console/InstBar
+@onready var room_pill: Panel = $UILayer/HUD/RoomPill
+@onready var overlay_card: Panel = $UILayer/HUD/OverlayPanel/OverlayCard
+@onready var victory_sub: Label = $UILayer/HUD/VictoryPanel/VictorySub
 
 var run_state: RunState = RunState.TITLE
 var _enemies_alive: int = 0
@@ -77,6 +123,7 @@ func _ready() -> void:
 	_on_currency_changed(RunManager.currency)
 	_apply_meta()
 	_on_player_hp_changed(player.health.hp)
+	_setup_visuals()
 	_show_chapter_title()
 
 func _process(_delta: float) -> void:
@@ -98,6 +145,63 @@ func _apply_meta() -> void:
 		RunManager.gain_essence("factor_rage")
 	for i in MetaManager.get_level("start_fear"):
 		RunManager.gain_essence("factor_fear")
+
+## ---- 视觉主题 / 背景 ----
+func _setup_visuals() -> void:
+	$UILayer/HUD.theme = UITheme.build_theme()
+	console.add_theme_stylebox_override("panel", UITheme.stylebox(Color(0.05, 0.06, 0.10, 0.86), UITheme.CYAN, 14, 1, 16))
+	hp_bar_bg.add_theme_stylebox_override("panel", UITheme.stylebox(Color(0.10, 0.10, 0.15, 0.9), Color(0, 0, 0, 0), 5, 0, 0))
+	inst_bar_bg.add_theme_stylebox_override("panel", UITheme.stylebox(Color(0.10, 0.10, 0.15, 0.9), Color(0, 0, 0, 0), 5, 0, 0))
+	room_pill.add_theme_stylebox_override("panel", UITheme.stylebox(Color(0.05, 0.06, 0.10, 0.8), UITheme.PANEL_BORDER, 20, 1, 14))
+	overlay_card.add_theme_stylebox_override("panel", UITheme.stylebox(UITheme.PANEL, UITheme.CYAN, 16, 1, 30))
+	UITheme.label(chapter_title, 56, UITheme.CYAN, 10, 5)
+	UITheme.label(interact_prompt, 24, UITheme.GOLD, 6, 3)
+	UITheme.label(room_progress_label, 18, UITheme.TEXT, 5, 2)
+	UITheme.label(console_hp_text, 14, Color.WHITE, 4, 2)
+	UITheme.label(console_inst_text, 12, Color.WHITE, 4, 2)
+	UITheme.label(console_info, 15, UITheme.TEXT, 4, 2)
+	UITheme.label(console_status, 14, UITheme.TEXT_DIM, 4, 2)
+	UITheme.label(victory_label, 56, UITheme.GOLD, 10, 5)
+	UITheme.label(victory_sub, 22, UITheme.TEXT, 5, 2)
+	UITheme.label(overlay_title, 32, UITheme.CYAN, 7, 3)
+	UITheme.label(overlay_body, 21, UITheme.TEXT, 5, 2)
+	_setup_run_background()
+
+func _setup_run_background() -> void:
+	var bl := CanvasLayer.new()
+	bl.layer = -1
+	add_child(bl)
+	# 地图地板（平铺 + 暗化）
+	var floor := TextureRect.new()
+	floor.texture = Art.map_texture("factor_rage")
+	if floor.texture != null:
+		floor.texture_repeat = CanvasItem.TEXTURE_REPEAT_ENABLED
+		floor.stretch_mode = TextureRect.STRETCH_TILE
+		floor.modulate = Color(0.5, 0.5, 0.58, 1.0)
+	else:
+		# 回退：网格
+		floor.texture = Placeholder.grid_cell(56, Color(0.2, 0.28, 0.36, 0.16))
+		floor.texture_repeat = CanvasItem.TEXTURE_REPEAT_ENABLED
+		floor.stretch_mode = TextureRect.STRETCH_TILE
+	floor.set_anchors_preset(Control.PRESET_FULL_RECT)
+	floor.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	bl.add_child(floor)
+	# 暗角
+	var vig := TextureRect.new()
+	vig.texture = Placeholder.vignette(256, 0.5, 0.85)
+	vig.set_anchors_preset(Control.PRESET_FULL_RECT)
+	vig.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	bl.add_child(vig)
+
+func _hp_color(ratio: float) -> Color:
+	if ratio > 0.5:
+		return UITheme.HP
+	if ratio > 0.25:
+		return UITheme.GOLD
+	return UITheme.RAGE
+
+func _inst_color(ratio: float) -> Color:
+	return UITheme.PURPLE.lerp(UITheme.RAGE, clampf(ratio, 0.0, 1.0))
 
 ## ---- 流程状态机 ----
 func _show_chapter_title() -> void:
@@ -150,7 +254,7 @@ func _load_room(room: Dictionary) -> void:
 			_enter_shop()
 		"event":
 			_enter_event()
-	room_progress_label.text = "阶段 %s · 种子 %d" % [RunManager.get_stage_progress(), RunManager.seed]
+	room_progress_label.text = "阶段 %s · 种子 %d · %s" % [RunManager.get_stage_progress(), RunManager.seed, RunManager.get_difficulty_name()]
 
 func _room_cleared() -> void:
 	overlay_panel.visible = false
@@ -226,8 +330,12 @@ func _buy_item(index: int) -> void:
 		return
 	var item: Dictionary = SHOP_ITEMS[index]
 	if RunManager.spend_currency(int(item["price"])):
-		_apply_effect(str(item["effect"]))
-	_show_shop()
+		var result: Dictionary = _apply_effect(str(item["effect"]))
+		run_state = RunState.SHOP_RESULT
+		_show_overlay("购买成功", str(result.get("text", "")) + "\n\n按 E 返回商店", result.get("color", Color.WHITE))
+	else:
+		run_state = RunState.SHOP_RESULT
+		_show_overlay("购买失败", "结晶不足\n\n按 E 返回商店", Color(1.0, 0.45, 0.45))
 
 func _show_event(ev: Dictionary) -> void:
 	var lines: Array = [ev["text"], ""]
@@ -240,30 +348,105 @@ func _choose_event(option_index: int) -> void:
 	var options: Array = _current_event.get("options", [])
 	if option_index < 0 or option_index >= options.size():
 		return
-	_apply_effect(str(options[option_index]["effect"]))
-	_room_cleared()
+	var result: Dictionary = _apply_effect(str(options[option_index]["effect"]))
+	run_state = RunState.EVENT_RESULT
+	_show_overlay("结果", str(result.get("text", "")) + "\n\n按 E 继续", result.get("color", Color.WHITE))
 
 ## ---- 效果 ----
-func _apply_effect(effect: String) -> void:
+## 执行效果并返回结果文本（用于结果页反馈）。
+func _apply_effect(effect: String) -> Dictionary:
+	var green := Color(0.5, 0.9, 0.5)
+	var red := Color(1.0, 0.45, 0.45)
+	var cyan := Color(0.6, 0.9, 1.0)
 	match effect:
 		"heal30":
 			player.heal(30.0)
+			return {"text": "恢复 30 生命", "color": green}
+		"heal_full":
+			player.heal(9999.0)
+			return {"text": "生命完全恢复", "color": green}
+		"max_hp_up":
+			player.health.max_hp += 20.0
+			player.heal(20.0)
+			RunManager.add_instability(20.0)
+			return {"text": "最大生命 +20，失控 +20", "color": green}
 		"stabilizer":
 			RunManager.use_stabilizer()
+			return {"text": "失控 -20", "color": green}
 		"essence_rage":
 			RunManager.gain_essence("factor_rage")
+			return {"text": "获得怒精华 ×1", "color": cyan}
 		"essence_fear":
 			RunManager.gain_essence("factor_fear")
+			return {"text": "获得惧精华 ×1", "color": cyan}
+		"essence_rage2":
+			RunManager.gain_essence("factor_rage")
+			RunManager.gain_essence("factor_rage")
+			RunManager.add_instability(15.0)
+			return {"text": "获得怒精华 ×2，失控 +15", "color": cyan}
+		"essence_fear2":
+			RunManager.gain_essence("factor_fear")
+			RunManager.gain_essence("factor_fear")
+			RunManager.add_instability(12.0)
+			return {"text": "获得惧精华 ×2，失控 +12", "color": cyan}
+		"speed_up":
+			player.mods.apply("mod_fear_speed")
+			RunManager.add_instability(8.0)
+			return {"text": "移速提升（惧疾走），失控 +8", "color": cyan}
+		"attack_up":
+			player.mods.apply("mod_rage_stack")
+			RunManager.add_instability(8.0)
+			return {"text": "攻击提升（怒叠层 +3），失控 +8", "color": cyan}
 		"drink":
 			player.heal(30.0)
 			RunManager.add_instability(10.0)
+			return {"text": "恢复 30 生命，失控 +10", "color": red}
 		"discard":
 			RunManager.gain_currency(15)
+			return {"text": "获得 15 结晶", "color": cyan}
 		"extract":
 			RunManager.gain_essence("factor_rage")
 			RunManager.add_instability(15.0)
+			return {"text": "获得怒精华 ×1，失控 +15", "color": cyan}
 		"shutdown":
 			RunManager.reduce_instability(10.0)
+			return {"text": "失控 -10", "color": green}
+		"shutdown_minor":
+			RunManager.reduce_instability(5.0)
+			return {"text": "失控 -5", "color": green}
+		"rescue":
+			player.heal(20.0)
+			if RunManager.rng_randf() < 0.5:
+				RunManager.gain_essence("factor_rage")
+				return {"text": "恢复 20 生命，获得怒精华 ×1", "color": green}
+			RunManager.gain_essence("factor_fear")
+			return {"text": "恢复 20 生命，获得惧精华 ×1", "color": green}
+		"loot":
+			RunManager.gain_currency(25)
+			RunManager.add_instability(10.0)
+			return {"text": "获得 25 结晶，失控 +10", "color": red}
+		"chaos_gamble":
+			return _chaos_gamble()
+	return {"text": "", "color": Color.WHITE}
+
+## 混沌注入：高风险高回报的随机结果（受种子控制，可复现）。
+func _chaos_gamble() -> Dictionary:
+	var cyan := Color(0.6, 0.9, 1.0)
+	var red := Color(1.0, 0.45, 0.45)
+	var roll := RunManager.rng_randf()
+	if roll < 0.4:
+		RunManager.gain_essence("factor_rage")
+		RunManager.gain_essence("factor_rage")
+		RunManager.gain_essence("factor_fear")
+		RunManager.gain_essence("factor_fear")
+		player.heal(20.0)
+		return {"text": "混沌涌动：怒/惧精华各 +2，恢复 20 生命", "color": cyan}
+	elif roll < 0.7:
+		RunManager.gain_currency(40)
+		return {"text": "混沌涌动：获得 40 结晶", "color": cyan}
+	player.take_raw_damage(20.0)
+	RunManager.add_instability(20.0)
+	return {"text": "混沌反噬：受到 20 伤害，失控 +20", "color": red}
 
 ## ---- 交互 ----
 func _do_rest() -> void:
@@ -311,11 +494,12 @@ func _spawn_drop(pos: Vector2) -> void:
 func _on_player_hp_changed(hp: float) -> void:
 	var max_hp := player.health.max_hp
 	var ratio := hp / max_hp if max_hp > 0.0 else 0.0
-	_set_bar(console_hp_fill, ratio)
+	_set_bar(console_hp_fill, ratio, _hp_color(ratio))
 	console_hp_text.text = "HP %d/%d" % [int(hp), int(max_hp)]
 
 func _on_instability_changed(value: float) -> void:
-	_set_bar(console_inst_fill, value / RunManager.INSTABILITY_MAX)
+	var ratio := value / RunManager.INSTABILITY_MAX
+	_set_bar(console_inst_fill, ratio, _inst_color(ratio))
 	console_inst_text.text = "失控 %d/%d" % [int(value), int(RunManager.INSTABILITY_MAX)]
 
 func _on_essence_changed(_ess: Dictionary) -> void:
@@ -342,10 +526,11 @@ func _on_float_text(payload: Dictionary) -> void:
 	fx_layer.add_child(burst)
 	burst.setup(pos, color)
 
-func _set_bar(fill: ColorRect, ratio: float) -> void:
+func _set_bar(fill: ColorRect, ratio: float, color: Color) -> void:
 	var bg: Control = fill.get_parent() as Control
 	fill.size = Vector2(bg.size.x * clampf(ratio, 0.0, 1.0), bg.size.y)
 	fill.position = Vector2.ZERO
+	fill.color = color
 
 func _update_status() -> void:
 	if not is_instance_valid(player):
@@ -383,6 +568,15 @@ func _unhandled_input(event: InputEvent) -> void:
 			elif _key(event, KEY_2):
 				get_viewport().set_input_as_handled()
 				_select_room(1)
+		RunState.EVENT_RESULT:
+			if event.is_action_pressed("interact"):
+				get_viewport().set_input_as_handled()
+				_room_cleared()
+		RunState.SHOP_RESULT:
+			if event.is_action_pressed("interact"):
+				get_viewport().set_input_as_handled()
+				run_state = RunState.ROOM
+				_show_shop()
 		RunState.CLEARED:
 			if event.is_action_pressed("interact"):
 				get_viewport().set_input_as_handled()
@@ -448,8 +642,9 @@ func _room_label(room: Dictionary) -> String:
 			return "Boss 房"
 	return "未知"
 
-func _show_overlay(title: String, body: String) -> void:
+func _show_overlay(title: String, body: String, color: Color = Color.WHITE) -> void:
 	overlay_title.text = title
 	overlay_title.visible = title != ""
 	overlay_body.text = body
+	overlay_body.add_theme_color_override("font_color", color)
 	overlay_panel.visible = true

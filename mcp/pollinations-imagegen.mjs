@@ -26,6 +26,25 @@ const BASE = 'https://image.pollinations.ai';
 const OUTPUT_DIR = process.env.IMAGE_OUTPUT_DIR || process.cwd();
 const TIMEOUT_MS = Number(process.env.IMAGE_TIMEOUT_MS || 180000);
 
+// Lazy-load sharp (present in the dsh profile node_modules) so the usually-JPEG
+// response is re-encoded into a REAL PNG before it hits disk. Godot imports the
+// file as PNG; a JPEG-in-.png would fail its importer. Falls back to raw bytes.
+const SHARP_PATH = 'file:///C:/Users/17801/.dsh/profiles/node_modules/sharp/dist/index.cjs';
+let _sharp;
+let _sharpResolved = false;
+async function getSharp() {
+  if (!_sharpResolved) {
+    _sharpResolved = true;
+    try {
+      const m = await import(SHARP_PATH);
+      _sharp = m.default;
+    } catch {
+      _sharp = null;
+    }
+  }
+  return _sharp;
+}
+
 function clampInt(v, min, max) {
   let n = Math.round(Number(v));
   if (!Number.isFinite(n)) n = min;
@@ -58,20 +77,30 @@ async function generateImage(args) {
   }
 
   const bytes = Buffer.from(await res.arrayBuffer());
-  const ct = res.headers.get('content-type') || '';
-  const ext = ct.includes('png') ? '.png' : ct.includes('webp') ? '.webp' : '.jpg';
+
+  // Always persist a real PNG: re-encode whatever Pollinations returned (usually
+  // JPEG) into PNG so Godot's importer accepts the file on first sight.
+  let outBytes = bytes;
+  const sharp = await getSharp();
+  if (sharp) {
+    try {
+      outBytes = await sharp(bytes).png().toBuffer();
+    } catch {
+      outBytes = bytes; // keep raw bytes; caller should run the post-process step
+    }
+  }
 
   let out = args.output_path ? String(args.output_path) : '';
   if (!out) {
     const ts = new Date().toISOString().replace(/[-:T]/g, '').slice(0, 14);
-    out = path.join(OUTPUT_DIR, `pollinations_${ts}${ext}`);
+    out = path.join(OUTPUT_DIR, `pollinations_${ts}.png`);
   } else if (!path.isAbsolute(out)) {
     out = path.join(OUTPUT_DIR, out);
   }
   mkdirSync(path.dirname(out), { recursive: true });
-  writeFileSync(out, bytes);
+  writeFileSync(out, outBytes);
 
-  return { path: out, model, width, height, seed: args.seed ?? null, bytes: bytes.length, provider: 'pollinations' };
+  return { path: out, model, width, height, seed: args.seed ?? null, bytes: outBytes.length, provider: 'pollinations' };
 }
 
 // ── Tool catalog ────────────────────────────────────────────────────────────

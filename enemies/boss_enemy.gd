@@ -12,6 +12,7 @@ enum State { CHASE, WINDUP, CHARGE, RECOVER }
 @export var charge_time: float = 0.5
 @export var recover_time: float = 0.5
 @export var attack_cooldown: float = 1.3
+@export var factor_id: String = "factor_rage"
 
 var _base_color := Color(0.85, 0.15, 0.2)
 
@@ -28,7 +29,12 @@ var _charge_dir: Vector2 = Vector2.ZERO
 func _ready() -> void:
 	add_to_group("enemy")
 	add_to_group("boss")
-	body_sprite.texture = Placeholder.circle(34, Color.WHITE)
+	var tex := Art.enemy_boss(factor_id)
+	if tex != null:
+		Art.fit_sprite(body_sprite, tex, 72.0)
+		_base_color = Color.WHITE
+	else:
+		body_sprite.texture = Placeholder.spiky(34, Color.WHITE, 12)
 	body_sprite.modulate = _base_color
 	health_bar.set_value(health.hp / health.max_hp)
 	health.died.connect(_on_died)
@@ -109,7 +115,7 @@ func take_damage(amount: float, _source: Node = null) -> void:
 
 func _on_damaged(_amount: float, _new_hp: float) -> void:
 	health_bar.set_value(health.hp / health.max_hp)
-	body_sprite.modulate = Color.WHITE
+	body_sprite.modulate = Color(1.8, 1.8, 1.8)
 	var tween := create_tween()
 	tween.tween_property(body_sprite, "modulate", _base_color, 0.12)
 

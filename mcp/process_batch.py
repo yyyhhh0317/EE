@@ -68,6 +68,9 @@ def main():
         canvas.paste(crop, ((side - cw) // 2, (side - ch) // 2), crop)
         canvas = canvas.resize((target, target), Image.LANCZOS)
         canvas.save(p)
+        imp = p + '.import'
+        if os.path.exists(imp):
+            os.remove(imp)
         print(f'{os.path.basename(p)}: {target}x{target} OK')
     print('BATCH DONE')
 

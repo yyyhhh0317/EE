@@ -10,8 +10,9 @@ enum State { IDLE, CHASE, WINDUP }
 @export var attack_damage: float = 10.0
 @export var windup_time: float = 0.55
 @export var attack_cooldown: float = 0.8
+@export var factor_id: String = "factor_rage"
 
-var _base_color := Color(0.95, 0.3, 0.3)  # 红色
+var _base_color := Color(0.95, 0.3, 0.3)  # 占位回退色
 
 @onready var health: HealthComponent = $Health
 @onready var body_sprite: Sprite2D = $Body
@@ -24,7 +25,12 @@ var _attack_cd: float = 0.0
 
 func _ready() -> void:
 	add_to_group("enemy")
-	body_sprite.texture = Placeholder.circle(20, Color.WHITE)
+	var tex := Art.enemy_mob(factor_id, RunManager.rng_randi_range(1, 5))
+	if tex != null:
+		Art.fit_sprite(body_sprite, tex, 40.0)
+		_base_color = Color.WHITE
+	else:
+		body_sprite.texture = Placeholder.spiky(20, Color.WHITE)
 	body_sprite.modulate = _base_color
 	health_bar.set_value(health.hp / health.max_hp)
 	health.died.connect(_on_died)
@@ -93,7 +99,7 @@ func take_damage(amount: float, _source: Node = null) -> void:
 
 func _on_damaged(_amount: float, _new_hp: float) -> void:
 	health_bar.set_value(health.hp / health.max_hp)
-	body_sprite.modulate = Color.WHITE
+	body_sprite.modulate = Color(1.8, 1.8, 1.8)
 	var tween := create_tween()
 	tween.tween_property(body_sprite, "modulate", _base_color, 0.12)
 

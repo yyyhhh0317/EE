@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Recolor one base map into 8 emotion-themed variants (identical structure,
-only the colour grade / style changes). Chaotic uses a rainbow + glitch grade.
-Adds a pixel-art post-process (downscale to a pixel grid + nearest upscale).
-Outputs art/maps/<emotion>_map.png."""
+only the colour grade / style changes). Chaotic = corrupted-but-readable room
+(iridescent hue + chromatic aberration + glitch bars). Adds a pixel-art
+post-process. Outputs art/maps/<emotion>_map.png."""
 import os
 import colorsys
 from PIL import Image, ImageOps, ImageChops
@@ -17,7 +17,7 @@ PALETTES = {
     'joy':      ((150, 40, 80),  (255, 190, 90),  (255, 244, 180)),  # 明黄/亮粉
     'rage':     ((70, 8, 8),     (210, 70, 25),   (255, 150, 60)),   # 暗红/橙
     'sorrow':   ((26, 40, 62),   (110, 138, 162), (190, 206, 220)),  # 灰蓝
-    'fear':     ((12, 8, 22),     (98, 60, 122),   (170, 120, 190)), # 深黑/暗紫（稍提亮可读）
+    'fear':     ((12, 8, 22),    (98, 60, 122),   (170, 120, 190)),  # 深黑/暗紫（稍提亮可读）
     'disgust':  ((20, 46, 18),   (92, 116, 66),   (168, 152, 164)),  # 绿紫
     'surprise': ((6, 6, 6),      (110, 110, 110), (255, 255, 255)),  # 高对比白
     'anxiety':  ((58, 58, 68),   (138, 132, 152), (216, 210, 230)),  # 灰/浅紫
@@ -29,20 +29,10 @@ def pixelate(img, grid=PIXEL_GRID):
     return small.resize(img.size, Image.NEAREST)
 
 
-def rainbow_lut():
-    lut = []
-    for i in range(256):
-        h = (i / 255.0) * 1.2 % 1.0
-        s = 1.0
-        v = 0.25 + 0.75 * (i / 255.0)
-        r, g, b = colorsys.hsv_to_rgb(h, s, v)
-        lut.append((int(r * 255), int(g * 255), int(b * 255)))
-    return lut
-
-
 def chaos_variant(img, grid=PIXEL_GRID):
-    """Full-rainbow per-pixel-block grade: hue varies by position (so the whole
-    rainbow appears), brightness tracks the structure's luminance."""
+    """Corrupted but still readable room: hue varies slowly by position (big
+    colour regions), brightness tracks the structure, then chromatic-aberration
+    (red/cyan fringing) + a few horizontal glitch bars."""
     small = img.convert('L').resize((grid, grid), Image.NEAREST)
     s = small.load()
     out = Image.new('RGB', (grid, grid))
@@ -50,11 +40,21 @@ def chaos_variant(img, grid=PIXEL_GRID):
     for y in range(grid):
         for x in range(grid):
             v = s[x, y]
-            h = ((x * 7 + y * 13) % 360) / 360.0
-            val = 0.30 + 0.70 * (v / 255.0)
-            r, g, b = colorsys.hsv_to_rgb(h, 1.0, val)
+            h = ((x * 2 + y * 3) % 360) / 360.0   # slow hue variation -> large colour regions
+            sat = 0.60                            # subdued so the room still reads
+            val = 0.15 + 0.85 * (v / 255.0)       # structure: dark shadows, lit areas bright
+            r, g, b = colorsys.hsv_to_rgb(h, sat, val)
             o[x, y] = (int(r * 255), int(g * 255), int(b * 255))
-    return out.resize(img.size, Image.NEAREST)
+    rgb = out.resize(img.size, Image.NEAREST)
+    # chromatic-aberration glitch (red/cyan fringing on every edge)
+    r, g, b = rgb.split()
+    rgb = Image.merge('RGB', (ImageChops.offset(r, 5, 0), g, ImageChops.offset(b, -5, 0)))
+    # a few deterministic horizontal glitch bars
+    w, h = rgb.size
+    for y, ih, sx in [(90, 12, 26), (300, 16, -22), (520, 10, 30), (660, 14, -18)]:
+        bar = rgb.crop((0, y, w, min(y + ih, h)))
+        rgb.paste(ImageChops.offset(bar, sx, 0), (0, y))
+    return rgb
 
 
 def main():
