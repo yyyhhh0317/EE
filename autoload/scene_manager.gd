@@ -4,11 +4,10 @@ extends Node
 var _pending_params: Dictionary = {}
 
 ## 切换到指定场景（路径需是 .tscn）。
+## 注意：延迟到帧末执行，避免在 autoload _ready（节点树忙）期间直接换场景。
 func goto(scene_path: String, params: Dictionary = {}) -> void:
 	_pending_params = params
-	var err := get_tree().change_scene_to_file(scene_path)
-	if err != OK:
-		push_error("SceneManager.goto 失败: %s (err=%s)" % [scene_path, err])
+	get_tree().call_deferred("change_scene_to_file", scene_path)
 
 ## 读取上一个场景传入的参数。
 func get_params() -> Dictionary:

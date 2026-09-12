@@ -2,5 +2,5 @@
 
 [ext_resource type="Script" path="res://combat/damage_number.gd" id="1"]
 
-[node name="DamageNumber" type="Label"]
+[node name="DamageNumber" type="Node2D"]
 script = ExtResource("1")

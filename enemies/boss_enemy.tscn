@@ -18,9 +18,10 @@ shape = SubResource("CircleShape2D_1")
 [node name="Body" type="Sprite2D" parent="."]
 
 [node name="HealthBar" parent="." instance=ExtResource("3")]
-position = Vector2(0, -44)
-bar_width = 80.0
-bar_height = 10.0
+position = Vector2(0, -52)
+bar_width = 140.0
+bar_height = 13.0
+use_boss_style = true
 
 [node name="Health" type="Node" parent="."]
 script = ExtResource("2")

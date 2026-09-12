@@ -90,7 +90,7 @@ func _on_damage_dealt(payload: Dictionary) -> void:
 	if not is_instance_valid(target):
 		return
 	var color := Color(1.0, 0.35, 0.35) if target.is_in_group("player") else Color(1.0, 0.95, 0.5)
-	var num: Label = DAMAGE_NUMBER_SCENE.instantiate()
+	var num: Node2D = DAMAGE_NUMBER_SCENE.instantiate()
 	fx_layer.add_child(num)
 	num.setup(amount, target.global_position, color)
 

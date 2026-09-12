@@ -1,0 +1,10 @@
+{
+  "id": "resonance_joy_sorrow",
+  "name": "释然",
+  "emotion_a": "joy",
+  "emotion_b": "sorrow",
+  "type": "adjacent",
+  "effect": "calm_decay",
+  "params": {"decay_mult": 1.0},
+  "desc": "喜+哀相邻：失控自然衰减速度 ×(1+对数)"
+}

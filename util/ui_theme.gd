@@ -19,18 +19,12 @@ const FEAR := Color("a06bff")         # 惧
 const TEXT := Color("e8e8f5")         # 主文字
 const TEXT_DIM := Color("9a9ab5")     # 次级文字
 
-## 因子主题色（按 factor_id 或关键词）。
+## 因子主题色：统一取数据表 color（唯一色源）；查不到时回退 UI 主色 CYAN。
 static func factor_color(id: String) -> Color:
-	match id:
-		"factor_rage", "rage", "怒":
-			return RAGE
-		"factor_fear", "fear", "惧":
-			return FEAR
-		"chaos", "混沌":
-			return PURPLE
-		"joy", "喜":
-			return GOLD
-	return CYAN
+	var f := DataManager.get_factor(id)
+	if f.is_empty():
+		return CYAN
+	return Color(str(f.get("color", "#4dd8ff")))
 
 ## 生成一个圆角描边样式盒。
 static func stylebox(bg: Color, border: Color = Color(0, 0, 0, 0), radius: int = 10, border_width: int = 1, margin: int = 12) -> StyleBoxFlat:
@@ -43,6 +37,23 @@ static func stylebox(bg: Color, border: Color = Color(0, 0, 0, 0), radius: int =
 	sb.content_margin_right = margin
 	sb.content_margin_top = 8
 	sb.content_margin_bottom = 8
+	return sb
+
+## 卡片素材样式盒：art/items/card.png（九宫格拉伸）；素材缺失回退程序样式盒。
+static func card_stylebox(border_color: Color) -> StyleBox:
+	var card_tex := Art.item_icon("card")
+	if card_tex == null:
+		return stylebox(PANEL, border_color, 16, 1, 30)
+	var sb := StyleBoxTexture.new()
+	sb.texture = card_tex
+	sb.texture_margin_left = 28.0
+	sb.texture_margin_right = 28.0
+	sb.texture_margin_top = 28.0
+	sb.texture_margin_bottom = 28.0
+	sb.content_margin_left = 56.0
+	sb.content_margin_right = 56.0
+	sb.content_margin_top = 28.0
+	sb.content_margin_bottom = 28.0
 	return sb
 
 ## 构建全局控件主题（字体沿用系统默认，只统一大小/配色/样式）。

@@ -1,0 +1,13 @@
+{
+  "id": "mod_sorrow_regen",
+  "name": "哀恸回神",
+  "type": "stat",
+  "stat": "sanity_regen",
+  "operation": "add",
+  "value": 2.0,
+  "hooks": [],
+  "duration": 0.0,
+  "max_stacks": 5,
+  "tags": ["sorrow"],
+  "is_negative": false
+}

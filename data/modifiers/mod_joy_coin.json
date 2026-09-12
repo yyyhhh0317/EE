@@ -1,0 +1,13 @@
+{
+  "id": "mod_joy_coin",
+  "name": "欢愉丰收",
+  "type": "hook",
+  "stat": "",
+  "operation": "add",
+  "value": 2.0,
+  "hooks": ["on_kill"],
+  "duration": 0.0,
+  "max_stacks": 1,
+  "tags": ["joy"],
+  "is_negative": false
+}

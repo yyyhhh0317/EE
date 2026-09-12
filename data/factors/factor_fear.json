@@ -3,9 +3,10 @@
   "name": "恐惧因子",
   "emotion": "fear",
   "color": "#5b2b8f",
-  "keywords": ["恐惧", "隐身", "视野"],
-  "modifiers": ["mod_fear_speed"],
+  "keywords": ["恐惧", "疾走", "惊扰"],
+  "modifiers": ["mod_fear_slow"],
+  "per_level_modifiers": ["mod_fear_speed"],
   "skills": [],
   "instability_gain": 12.0,
-  "description": "以恐惧为刃：潜行、背刺、惊扰。"
+  "description": "风筝流的幽灵：疾走如风，命中减速猎物。"
 }

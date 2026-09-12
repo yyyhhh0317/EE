@@ -1,0 +1,13 @@
+{
+  "id": "mod_rage_power",
+  "name": "怒意增幅",
+  "type": "stat",
+  "stat": "attack",
+  "operation": "add",
+  "value": 4.0,
+  "hooks": [],
+  "duration": 0.0,
+  "max_stacks": 5,
+  "tags": ["rage"],
+  "is_negative": false
+}

@@ -15,7 +15,17 @@ var current_state: State = State.BOOT
 func _ready() -> void:
 	# Autoload 已按顺序初始化（EventBus / DataManager 等），此处进入主菜单。
 	_setup_window()
-	change_state(State.MAIN_MENU)
+	var args := OS.get_cmdline_user_args()
+	if args.has("--smoke-run"):
+		# 冒烟测试：跳过主菜单，直接进入单局场景（headless CI 用）。
+		RunManager.start_run(1, 12345)
+		change_state(State.RUN)
+		SceneManager.goto(RUN_SCENE)
+	elif args.has("--smoke-scene"):
+		# 冒烟测试：保留命令行指定的场景（boot/smoke_test.tscn 用）。
+		change_state(State.RUN)
+	else:
+		change_state(State.MAIN_MENU)
 
 ## 全屏运行（画面铺满整个屏幕，配合 canvas_items 拉伸等比放大）。
 func _setup_window() -> void:
@@ -35,6 +45,10 @@ func goto_lobby() -> void:
 func goto_main_menu() -> void:
 	change_state(State.MAIN_MENU)
 	SceneManager.goto(MENU_SCENE)
+
+## 兼容旧调用（遗留测试房使用）。
+func back_to_menu() -> void:
+	goto_main_menu()
 
 ## 大厅选章节 → 开始一局。
 func start_chapter(chapter: int, seed: int = 0) -> void:

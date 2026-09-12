@@ -1,0 +1,13 @@
+{
+  "id": "mod_joy_crit",
+  "name": "欢愉暴击",
+  "type": "stat",
+  "stat": "crit_chance",
+  "operation": "add",
+  "value": 0.08,
+  "hooks": [],
+  "duration": 0.0,
+  "max_stacks": 5,
+  "tags": ["joy"],
+  "is_negative": false
+}

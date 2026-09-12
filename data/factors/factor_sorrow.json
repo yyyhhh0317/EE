@@ -1,0 +1,12 @@
+{
+  "id": "factor_sorrow",
+  "name": "哀恸因子",
+  "emotion": "sorrow",
+  "color": "#6fa8dc",
+  "keywords": ["修复", "凝滞", "浓雾"],
+  "modifiers": ["mod_sorrow_lifesteal"],
+  "per_level_modifiers": ["mod_sorrow_regen"],
+  "skills": [],
+  "instability_gain": 10.0,
+  "description": "续航流的自我修复：哀恸之中汲取生机，理智恢复加快。"
+}

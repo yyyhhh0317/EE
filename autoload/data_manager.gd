@@ -65,8 +65,14 @@ func get_row(table: String, id: String) -> Dictionary:
 	var t: Dictionary = tables.get(table, {})
 	return t.get(id, {})
 
+## 返回整张表（id -> row），表不存在返回空字典。
+func get_rows(table: String) -> Dictionary:
+	return tables.get(table, {})
+
 ## 便捷查询接口（后续随系统扩展）。
 func get_factor(id: String) -> Dictionary: return get_row("factors", id)
 func get_modifier(id: String) -> Dictionary: return get_row("modifiers", id)
 func get_enemy(id: String) -> Dictionary: return get_row("enemies", id)
 func get_skill(id: String) -> Dictionary: return get_row("skills", id)
+func get_resonance(id: String) -> Dictionary: return get_row("resonances", id)
+func get_pollution(id: String) -> Dictionary: return get_row("pollutions", id)

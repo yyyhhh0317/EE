@@ -6,21 +6,12 @@ import math
 import numpy as np
 from PIL import Image, ImageDraw
 
+from factor_colors import EMO_COLOR   # 配色唯一源头（权威源：data/factors/*.json）
+
 OUT = r'D:\yyy\EE\art\items'
 PIX = 48            # pixel-grid resolution (draw at this size, then upscale)
 UP = 2              # upscale -> final 96px sprites
 FINAL = PIX * UP
-
-# theme main colour per emotion (for energy glow / essence crystal)
-EMO_COLOR = {
-    'joy':      (255, 200, 60),
-    'rage':     (255, 80, 40),
-    'sorrow':   (110, 150, 180),
-    'fear':     (150, 70, 200),
-    'disgust':  (110, 170, 60),
-    'surprise': (190, 225, 255),
-    'anxiety':  (170, 160, 205),
-}
 
 def hsv2rgb(h, s, v):
     h = h % 1.0
@@ -126,10 +117,256 @@ def draw_stabilizer():
     return img
 
 
+def draw_memory():
+    """记忆碎片 — a broken glass shard of a memory."""
+    img = Image.new('RGBA', (PIX, PIX), (0, 0, 0, 0))
+    d = ImageDraw.Draw(img)
+    shard = [(24, 5), (38, 17), (35, 34), (26, 45), (14, 40), (9, 26), (13, 12)]
+    d.polygon(shard, fill=(120, 175, 215), outline=(70, 110, 150))
+    d.polygon([(24, 5), (38, 17), (24, 26)], fill=(170, 215, 245))
+    d.polygon([(24, 5), (13, 12), (24, 26)], fill=(95, 150, 195))
+    d.polygon([(24, 26), (35, 34), (26, 45), (14, 40), (9, 26)], fill=(140, 190, 230))
+    d.polygon([(24, 26), (35, 34), (26, 45)], fill=(110, 165, 210))
+    d.line([(20, 10), (17, 20)], fill=(255, 255, 255, 200), width=2)
+    return img
+
+
+def draw_potion():
+    """药剂 — a round flask with red liquid."""
+    img = Image.new('RGBA', (PIX, PIX), (0, 0, 0, 0))
+    d = ImageDraw.Draw(img)
+    cx = PIX / 2
+    d.ellipse([cx - 15, 16, cx + 15, 44], fill=(232, 236, 242), outline=(150, 160, 175), width=2)
+    d.ellipse([cx - 12, 25, cx + 12, 41], fill=(215, 70, 70))
+    d.rectangle([cx - 12, 32, cx + 12, 41], fill=(215, 70, 70))
+    d.ellipse([cx - 12, 25, cx + 12, 41], outline=(150, 160, 175))
+    d.rectangle([cx - 5, 8, cx + 5, 18], fill=(232, 236, 242), outline=(150, 160, 175), width=1)
+    d.rectangle([cx - 6, 3, cx + 6, 9], fill=(160, 110, 70), outline=(110, 75, 45))
+    d.line([(cx - 8, 24), (cx - 8, 34)], fill=(255, 255, 255, 170), width=2)
+    return img
+
+
+def draw_syringe():
+    """注射器 — injects factor essence (core mechanic)."""
+    img = Image.new('RGBA', (PIX, PIX), (0, 0, 0, 0))
+    d = ImageDraw.Draw(img)
+    cx = PIX / 2
+    d.rectangle([cx - 7, 12, cx + 7, 36], fill=(235, 238, 244), outline=(140, 150, 165), width=2)
+    d.rectangle([cx - 5, 22, cx + 5, 34], fill=(150, 90, 200))
+    for yy in (16, 20, 24, 28, 32):
+        d.line([cx + 2, yy, cx + 6, yy], fill=(175, 185, 200), width=1)
+    d.rectangle([cx - 4, 6, cx + 4, 13], fill=(150, 160, 175))
+    d.rectangle([cx - 8, 3, cx + 8, 7], fill=(180, 190, 205), outline=(120, 130, 145))
+    d.rectangle([cx - 1, 36, cx + 1, 45], fill=(205, 210, 220))
+    return img
+
+
+def draw_trait():
+    """词条 — a rune stone pickup."""
+    img = Image.new('RGBA', (PIX, PIX), (0, 0, 0, 0))
+    d = ImageDraw.Draw(img)
+    d.rounded_rectangle([10, 8, 38, 40], radius=6, fill=(58, 52, 74), outline=(125, 115, 155), width=2)
+    d.polygon([(24, 14), (31, 24), (24, 34), (17, 24)], outline=(180, 240, 255), width=2)
+    d.line([(24, 17), (24, 31)], fill=(180, 240, 255), width=2)
+    return img
+
+
+def draw_chest():
+    """宝箱 — reward container."""
+    img = Image.new('RGBA', (PIX, PIX), (0, 0, 0, 0))
+    d = ImageDraw.Draw(img)
+    d.rounded_rectangle([9, 14, 39, 26], radius=6, fill=(140, 95, 50), outline=(90, 60, 30), width=2)
+    d.rectangle([10, 25, 38, 42], fill=(120, 80, 42), outline=(90, 60, 30), width=2)
+    d.rectangle([21, 14, 27, 42], fill=(225, 185, 70), outline=(160, 125, 40))
+    d.rectangle([20, 24, 28, 33], fill=(240, 200, 80), outline=(150, 115, 35), width=1)
+    d.ellipse([22, 27, 26, 31], fill=(120, 90, 25))
+    return img
+
+
+def draw_hp():
+    """HP — a pixel heart."""
+    img = Image.new('RGBA', (PIX, PIX), (0, 0, 0, 0))
+    d = ImageDraw.Draw(img)
+    d.ellipse([7, 12, 25, 30], fill=(225, 60, 75), outline=(140, 25, 40), width=2)
+    d.ellipse([23, 12, 41, 30], fill=(225, 60, 75), outline=(140, 25, 40), width=2)
+    d.polygon([(6, 22), (24, 44), (42, 22)], fill=(225, 60, 75), outline=(140, 25, 40))
+    d.line([(11, 17), (11, 24)], fill=(255, 210, 215, 220), width=3)
+    return img
+
+
+def draw_san():
+    """SAN — a brain (mental/sanity resource)."""
+    img = Image.new('RGBA', (PIX, PIX), (0, 0, 0, 0))
+    d = ImageDraw.Draw(img)
+    d.ellipse([7, 13, 25, 35], fill=(228, 152, 172), outline=(150, 80, 105), width=2)
+    d.ellipse([23, 13, 41, 35], fill=(228, 152, 172), outline=(150, 80, 105), width=2)
+    d.line([24, 14, 24, 34], fill=(150, 80, 105), width=2)
+    for y in (19, 25, 31):
+        d.arc([9, y - 4, 23, y + 4], 195, 345, fill=(150, 80, 105), width=2)
+        d.arc([25, y - 4, 39, y + 4], 195, 345, fill=(150, 80, 105), width=2)
+    d.line([(12, 17), (15, 20)], fill=(255, 220, 230, 200), width=2)
+    return img
+
+
+def draw_unstable():
+    """失控值 — a spiky unstable burst."""
+    img = Image.new('RGBA', (PIX, PIX), (0, 0, 0, 0))
+    d = ImageDraw.Draw(img)
+    cx = cy = PIX / 2
+    pts = []
+    for i in range(20):
+        ang = i * math.pi / 10
+        r = 21 if i % 2 == 0 else 13
+        pts.append((cx + math.cos(ang) * r, cy + math.sin(ang) * r))
+    d.polygon(pts, fill=(205, 55, 70), outline=(85, 18, 35), width=2)
+    d.ellipse([cx - 11, cy - 11, cx + 11, cy + 11], fill=(140, 25, 55))
+    d.ellipse([cx - 5, cy - 5, cx + 5, cy + 5], fill=(255, 200, 70))
+    return img
+
+
+def draw_slot():
+    """Empty slot frame for skills / items."""
+    img = Image.new('RGBA', (PIX, PIX), (0, 0, 0, 0))
+    d = ImageDraw.Draw(img)
+    d.rounded_rectangle([6, 6, 42, 42], radius=7, fill=(28, 26, 40, 165), outline=(140, 130, 172), width=3)
+    d.line([(11, 11), (11, 17)], fill=(95, 88, 120), width=2)
+    d.line([(11, 11), (17, 11)], fill=(95, 88, 120), width=2)
+    return img
+
+
+DARK = (38, 33, 50)
+
+
+def draw_skill_joy():
+    """喜 — 加速/分裂：三重加速箭头."""
+    img = Image.new('RGBA', (PIX, PIX), (0, 0, 0, 0))
+    d = ImageDraw.Draw(img)
+    c = EMO_COLOR['joy']
+    for yy in (26, 36, 46):
+        d.line([(14, yy), (24, yy - 10), (34, yy)], fill=DARK, width=7, joint='curve')
+        d.line([(14, yy), (24, yy - 10), (34, yy)], fill=c, width=4, joint='curve')
+    return img
+
+
+def draw_skill_rage():
+    """怒 — 狂暴/震地：烈焰."""
+    img = Image.new('RGBA', (PIX, PIX), (0, 0, 0, 0))
+    d = ImageDraw.Draw(img)
+    c = EMO_COLOR['rage']
+    flame = [(24, 5), (31, 19), (28, 22), (34, 30), (30, 41), (24, 45), (18, 41), (14, 30), (20, 22), (17, 19)]
+    d.polygon(flame, fill=c, outline=DARK)
+    d.polygon([(24, 20), (28, 31), (24, 39), (20, 31)], fill=(255, 225, 130))
+    return img
+
+
+def draw_skill_sorrow():
+    """哀 — 减速/吸魂：泪滴."""
+    img = Image.new('RGBA', (PIX, PIX), (0, 0, 0, 0))
+    d = ImageDraw.Draw(img)
+    c = EMO_COLOR['sorrow']
+    d.ellipse([13, 22, 35, 44], fill=c, outline=DARK, width=2)
+    d.polygon([(24, 6), (34, 30), (14, 30)], fill=c, outline=DARK)
+    d.line([(19, 17), (17, 25)], fill=(255, 255, 255, 190), width=2)
+    return img
+
+
+def draw_skill_fear():
+    """惧 — 恐惧/隐身：凝视之眼."""
+    img = Image.new('RGBA', (PIX, PIX), (0, 0, 0, 0))
+    d = ImageDraw.Draw(img)
+    c = EMO_COLOR['fear']
+    d.ellipse([6, 15, 42, 33], fill=(238, 238, 245), outline=DARK, width=2)
+    d.ellipse([17, 13, 31, 35], fill=c, outline=DARK, width=2)
+    d.ellipse([21, 20, 27, 28], fill=(18, 12, 26))
+    d.ellipse([22, 21, 25, 24], fill=(255, 255, 255))
+    return img
+
+
+def draw_skill_disgust():
+    """厌 — 中毒/腐蚀：毒液滴."""
+    img = Image.new('RGBA', (PIX, PIX), (0, 0, 0, 0))
+    d = ImageDraw.Draw(img)
+    c = EMO_COLOR['disgust']
+    d.ellipse([13, 20, 35, 42], fill=c, outline=DARK, width=2)
+    d.polygon([(24, 7), (33, 28), (15, 28)], fill=c, outline=DARK)
+    d.ellipse([18, 27, 23, 32], fill=(225, 255, 205))
+    d.ellipse([26, 32, 30, 36], fill=(225, 255, 205))
+    return img
+
+
+def draw_skill_surprise():
+    """惊 — 瞬移/惊骇：闪电."""
+    img = Image.new('RGBA', (PIX, PIX), (0, 0, 0, 0))
+    d = ImageDraw.Draw(img)
+    c = EMO_COLOR['surprise']
+    bolt = [(29, 4), (14, 26), (23, 26), (18, 44), (35, 20), (25, 20)]
+    d.polygon(bolt, fill=c, outline=DARK)
+    return img
+
+
+def draw_skill_anxiety():
+    """忧 — 焦虑叠层：螺旋."""
+    img = Image.new('RGBA', (PIX, PIX), (0, 0, 0, 0))
+    d = ImageDraw.Draw(img)
+    c = EMO_COLOR['anxiety']
+    pts = []
+    for t in range(0, 760, 10):
+        r = 2.5 + t * 0.028
+        a = math.radians(t)
+        pts.append((24 + math.cos(a) * r, 24 + math.sin(a) * r))
+    d.line(pts, fill=DARK, width=6, joint='curve')
+    d.line(pts, fill=c, width=3, joint='curve')
+    return img
+
+
+def draw_skill_chaos():
+    """混沌 — 彩虹爆星."""
+    img = Image.new('RGBA', (PIX, PIX), (0, 0, 0, 0))
+    d = ImageDraw.Draw(img)
+    for i in range(6):
+        col = hsv2rgb(i / 6.0, 0.9, 0.95)
+        a = i * math.pi / 3
+        d.line([(24 + math.cos(a) * 3, 24 + math.sin(a) * 3),
+                (24 + math.cos(a) * 21, 24 + math.sin(a) * 21)], fill=col, width=6)
+    d.ellipse([20, 20, 28, 28], fill=(255, 255, 255), outline=(60, 50, 70), width=1)
+    return img
+
+
+def draw_cd():
+    """Cooldown overlay — translucent dark cover for a skill slot."""
+    img = Image.new('RGBA', (PIX, PIX), (0, 0, 0, 0))
+    d = ImageDraw.Draw(img)
+    d.rounded_rectangle([6, 6, 42, 42], radius=7, fill=(10, 8, 16, 175), outline=(70, 62, 92), width=2)
+    return img
+
+
+def draw_card():
+    """Card / panel frame for shop and trait selection."""
+    img = Image.new('RGBA', (PIX, PIX), (0, 0, 0, 0))
+    d = ImageDraw.Draw(img)
+    d.rounded_rectangle([4, 4, 44, 44], radius=6, fill=(34, 31, 48), outline=(152, 142, 182), width=3)
+    d.line([(9, 15), (39, 15)], fill=(92, 86, 118), width=2)
+    return img
+
+
 def main():
     os.makedirs(OUT, exist_ok=True)
     save(draw_coin(), 'coin.png')
     save(draw_stabilizer(), 'stabilizer.png')
+    save(draw_memory(), 'memory_fragment.png')
+    save(draw_potion(), 'potion.png')
+    save(draw_syringe(), 'syringe.png')
+    save(draw_trait(), 'trait.png')
+    save(draw_chest(), 'chest.png')
+    save(draw_hp(), 'hp.png')
+    save(draw_san(), 'san.png')
+    save(draw_unstable(), 'unstable.png')
+    save(draw_slot(), 'slot.png')
+    for fn in (draw_skill_joy, draw_skill_rage, draw_skill_sorrow, draw_skill_fear,
+               draw_skill_disgust, draw_skill_surprise, draw_skill_anxiety, draw_skill_chaos):
+        save(fn(), f'skill_{fn.__name__.split("_")[-1]}.png')
+    save(draw_cd(), 'cd_overlay.png')
+    save(draw_card(), 'card.png')
     for emo, col in EMO_COLOR.items():
         save(draw_energy(col), f'energy_{emo}.png')
         save(draw_crystal(col), f'essence_{emo}.png')

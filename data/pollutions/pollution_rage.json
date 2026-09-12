@@ -1,0 +1,7 @@
+{
+  "id": "pollution_rage",
+  "emotion": "rage",
+  "name": "焦土地狱",
+  "desc": "地面灼烧：战斗房每 1.5s 扣 2 HP",
+  "effect": "scorch"
+}

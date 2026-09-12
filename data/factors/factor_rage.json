@@ -5,7 +5,8 @@
   "color": "#e5484d",
   "keywords": ["激怒", "狂暴", "震地"],
   "modifiers": ["mod_rage_stack"],
+  "per_level_modifiers": ["mod_rage_power"],
   "skills": [],
   "instability_gain": 15.0,
-  "description": "越战越强的暴怒之力，代价是更快的失控。"
+  "description": "近身压制的狂战士：命中越叠越强，代价是最快的失控。"
 }

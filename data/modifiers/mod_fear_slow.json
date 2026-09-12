@@ -1,0 +1,14 @@
+{
+  "id": "mod_fear_slow",
+  "name": "恐惧迟滞",
+  "type": "hook",
+  "stat": "",
+  "operation": "add",
+  "value": 0.0,
+  "hooks": ["on_hit"],
+  "duration": 0.0,
+  "max_stacks": 1,
+  "tags": ["fear"],
+  "is_negative": false,
+  "params": {"slow_pct": 0.3, "slow_time": 1.5}
+}

@@ -1,0 +1,10 @@
+{
+  "id": "oppose_rage_joy",
+  "name": "躁动",
+  "emotion_a": "rage",
+  "emotion_b": "joy",
+  "type": "opposite",
+  "effect": "threshold_down",
+  "params": {"threshold": 0.6},
+  "desc": "怒×喜对立：亢奋阈值 70%→60%，但双方词条效果 -15%"
+}

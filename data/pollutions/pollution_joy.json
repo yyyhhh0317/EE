@@ -1,0 +1,7 @@
+{
+  "id": "pollution_joy",
+  "emotion": "joy",
+  "name": "光污染",
+  "desc": "敌人移速 +10%",
+  "effect": "glare"
+}

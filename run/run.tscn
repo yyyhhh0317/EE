@@ -1,7 +1,8 @@
-[gd_scene load_steps=3 format=3]
+[gd_scene load_steps=4 format=3]
 
 [ext_resource type="Script" path="res://run/run.gd" id="1"]
 [ext_resource type="PackedScene" path="res://player/player.tscn" id="2"]
+[ext_resource type="Script" path="res://ui/build_panel.gd" id="3"]
 
 [node name="Run" type="Node2D"]
 script = ExtResource("1")
@@ -27,15 +28,15 @@ mouse_filter = 2
 layout_mode = 1
 offset_left = 12.0
 offset_top = 12.0
-offset_right = 368.0
-offset_bottom = 300.0
+offset_right = 390.0
+offset_bottom = 320.0
 mouse_filter = 2
 
 [node name="Title" type="Label" parent="UILayer/HUD/Console"]
 layout_mode = 1
 offset_left = 18.0
 offset_top = 8.0
-offset_right = 350.0
+offset_right = 372.0
 offset_bottom = 34.0
 theme_override_colors/font_color = Color(0.55, 0.82, 1, 1)
 theme_override_font_sizes/font_size = 16
@@ -45,7 +46,7 @@ text = "◆ 状态控制台"
 layout_mode = 1
 offset_left = 18.0
 offset_top = 40.0
-offset_right = 350.0
+offset_right = 372.0
 offset_bottom = 68.0
 
 [node name="Fill" type="ColorRect" parent="UILayer/HUD/Console/HPBar"]
@@ -63,18 +64,45 @@ text = "HP 100/100"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="InstBar" type="Panel" parent="UILayer/HUD/Console"]
+[node name="SanityBar" type="Panel" parent="UILayer/HUD/Console"]
 layout_mode = 1
 offset_left = 18.0
 offset_top = 76.0
-offset_right = 350.0
+offset_right = 372.0
 offset_bottom = 96.0
 
-[node name="Fill" type="ColorRect" parent="UILayer/HUD/Console/InstBar"]
+[node name="Fill" type="ColorRect" parent="UILayer/HUD/Console/SanityBar"]
+layout_mode = 1
+color = Color(0.85, 0.93, 1, 1)
+
+[node name="Text" type="Label" parent="UILayer/HUD/Console/SanityBar"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_font_sizes/font_size = 12
+text = "理智 100/100"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="OverheatBar" type="Panel" parent="UILayer/HUD/Console"]
+layout_mode = 1
+offset_left = 18.0
+offset_top = 104.0
+offset_right = 372.0
+offset_bottom = 124.0
+
+[node name="Fill" type="ColorRect" parent="UILayer/HUD/Console/OverheatBar"]
 layout_mode = 1
 color = Color(0.69, 0.45, 0.96, 1)
 
-[node name="Text" type="Label" parent="UILayer/HUD/Console/InstBar"]
+[node name="Tick" type="ColorRect" parent="UILayer/HUD/Console/OverheatBar"]
+layout_mode = 1
+color = Color(1, 0.82, 0.4, 1)
+
+[node name="Text" type="Label" parent="UILayer/HUD/Console/OverheatBar"]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -89,18 +117,31 @@ vertical_alignment = 1
 [node name="Info" type="Label" parent="UILayer/HUD/Console"]
 layout_mode = 1
 offset_left = 18.0
-offset_top = 104.0
-offset_right = 350.0
-offset_bottom = 150.0
-text = "结晶 ×0\n怒精华 ×0 · 惧精华 ×0"
+offset_top = 132.0
+offset_right = 372.0
+offset_bottom = 178.0
+text = "结晶 ×0\n怒 ×0 · 惧 ×0 · 喜 ×0 · 哀 ×0"
 
 [node name="Status" type="Label" parent="UILayer/HUD/Console"]
 layout_mode = 1
 offset_left = 18.0
-offset_top = 156.0
-offset_right = 350.0
-offset_bottom = 240.0
-text = "攻击 12 · 移速 220\n怒叠层 0 · 惧叠层 0\n状态：稳定"
+offset_top = 186.0
+offset_right = 372.0
+offset_bottom = 300.0
+text = "攻击 12 · 攻速 6.7/s · 暴击 0%\nDPS ≈ 80 · 状态：稳定\n污染：无"
+
+[node name="BuildPanel" type="Control" parent="UILayer/HUD"]
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -252.0
+offset_top = 66.0
+offset_right = -12.0
+offset_bottom = 396.0
+grow_horizontal = 0
+mouse_filter = 2
+script = ExtResource("3")
 
 [node name="RoomPill" type="Panel" parent="UILayer/HUD"]
 layout_mode = 1
@@ -153,12 +194,12 @@ anchor_top = 1.0
 anchor_bottom = 1.0
 offset_left = 16.0
 offset_top = -36.0
-offset_right = 1120.0
+offset_right = 1264.0
 offset_bottom = -8.0
 grow_vertical = 0
 theme_override_colors/font_color = Color(0.62, 0.62, 0.75, 1)
 theme_override_font_sizes/font_size = 13
-text = "WASD 移动 · 鼠标瞄准 · 左键发射 · 空格冲刺 · Q 注射怒 · R 注射惧 · E 交互 · Esc 返回大厅"
+text = "WASD 移动 · 鼠标瞄准 · 左键发射 · 空格冲刺(耗理智) · 1-4 注射因子(慢动作选槽) · F 情绪风暴(6槽满) · E 交互 · Esc 大厅"
 
 [node name="ChapterTitle" type="Label" parent="UILayer/HUD"]
 modulate = Color(1, 1, 1, 0)
@@ -177,6 +218,63 @@ grow_vertical = 2
 text = "第 1 章 · 暴怒因子"
 horizontal_alignment = 1
 vertical_alignment = 1
+
+[node name="Announce" type="Label" parent="UILayer/HUD"]
+modulate = Color(1, 1, 1, 0)
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -420.0
+offset_top = 96.0
+offset_right = 420.0
+offset_bottom = 176.0
+grow_horizontal = 2
+text = ""
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="DangerVignette" type="TextureRect" parent="UILayer/HUD"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 6
+
+[node name="FogRect" type="ColorRect" parent="UILayer/HUD"]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.05, 0.07, 0.12, 0.52)
+
+[node name="BerserkTint" type="ColorRect" parent="UILayer/HUD"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(1, 0.1, 0.15, 0)
+
+[node name="FlashRect" type="ColorRect" parent="UILayer/HUD"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(1, 1, 1, 0)
 
 [node name="VictoryPanel" type="ColorRect" parent="UILayer/HUD"]
 visible = false
@@ -219,6 +317,50 @@ offset_bottom = 60.0
 grow_horizontal = 2
 grow_vertical = 2
 text = "按 Esc 返回大厅"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="GameOverPanel" type="ColorRect" parent="UILayer/HUD"]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.1, 0, 0, 0.72)
+
+[node name="GameOverLabel" type="Label" parent="UILayer/HUD/GameOverPanel"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -400.0
+offset_top = -60.0
+offset_right = 400.0
+offset_bottom = 40.0
+grow_horizontal = 2
+grow_vertical = 2
+text = "你失控了…"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="GameOverSub" type="Label" parent="UILayer/HUD/GameOverPanel"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -400.0
+offset_top = 20.0
+offset_right = 400.0
+offset_bottom = 60.0
+grow_horizontal = 2
+grow_vertical = 2
+text = "记忆碎片 +0 · 按 Esc 返回大厅"
 horizontal_alignment = 1
 vertical_alignment = 1
 

@@ -1,0 +1,10 @@
+{
+  "id": "resonance_rage_fear",
+  "name": "战栗",
+  "emotion_a": "rage",
+  "emotion_b": "fear",
+  "type": "adjacent",
+  "effect": "fear_spread",
+  "params": {"chance": 0.25, "fear_time": 2.0, "slow_pct": 0.5},
+  "desc": "怒+惧相邻：命中 25%×对数 概率恐惧目标（减速 50%、逃离 2s）"
+}

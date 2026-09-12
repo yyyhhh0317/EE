@@ -1,0 +1,10 @@
+{
+  "id": "oppose_fear_sorrow",
+  "name": "麻木",
+  "emotion_a": "fear",
+  "emotion_b": "sorrow",
+  "type": "opposite",
+  "effect": "damage_overheat_down",
+  "params": {"mult": 0.5},
+  "desc": "惧×哀对立：受击失控增量 -50%，但双方词条效果 -15%"
+}

@@ -10,6 +10,23 @@ var _use_placeholder: bool = true
 
 @onready var body_sprite: Sprite2D = $Body
 
+const STABILIZER_COLOR := Color(0.42, 0.9, 0.62)   # 非因子道具，颜色自持
+const SHORT_NAME := {
+	"factor_rage": "怒", "factor_fear": "惧", "factor_joy": "喜", "factor_sorrow": "哀",
+	"factor_disgust": "厌", "factor_surprise": "惊", "factor_anxiety": "忧", "factor_chaos": "混沌",
+}
+
+
+## 显示 / 辉光颜色：因子一律取数据表 color（唯一色源），非因子道具用本地常量。
+func display_color(id: String) -> Color:
+	if id == "stabilizer":
+		return STABILIZER_COLOR
+	var f := DataManager.get_factor(id)
+	if f.is_empty():
+		return Color.WHITE
+	return Color(str(f.get("color", "#ffffff")))
+
+
 func _ready() -> void:
 	body_entered.connect(_on_body_entered)
 	_apply_visual()
@@ -20,18 +37,12 @@ func setup(type: String, pos: Vector2) -> void:
 	_apply_visual()
 
 func _apply_visual() -> void:
-	var c := Color.WHITE
+	var c := display_color(pickup_type)
 	var tex: Texture2D
-	match pickup_type:
-		"factor_rage":
-			tex = Art.essence("factor_rage")
-			c = Color(0.95, 0.42, 0.26)
-		"factor_fear":
-			tex = Art.essence("factor_fear")
-			c = Color(0.63, 0.42, 0.92)
-		"stabilizer":
-			tex = Art.stabilizer()
-			c = Color(0.42, 0.9, 0.62)
+	if pickup_type == "stabilizer":
+		tex = Art.stabilizer()
+	else:
+		tex = Art.essence(pickup_type)
 	if _glow == null:
 		_glow = Sprite2D.new()
 		_glow.texture = Placeholder.soft_glow(16, Color.WHITE)
@@ -67,19 +78,13 @@ func _on_body_entered(body: Node) -> void:
 		return
 	var pos := global_position
 	var text := ""
-	var color := Color.WHITE
 	match pickup_type:
-		"factor_rage", "factor_fear":
+		"factor_rage", "factor_fear", "factor_joy", "factor_sorrow":
 			RunManager.gain_essence(pickup_type)
-			if pickup_type == "factor_rage":
-				text = "+1 怒精华"
-				color = Color(0.95, 0.42, 0.26)
-			else:
-				text = "+1 惧精华"
-				color = Color(0.63, 0.42, 0.92)
+			text = "+1 %s精华" % SHORT_NAME.get(pickup_type, "")
 		"stabilizer":
 			RunManager.use_stabilizer()
 			text = "-20 失控"
-			color = Color(0.42, 0.9, 0.62)
-	EventBus.emit("fx.float_text", {"text": text, "pos": pos, "color": color})
+	# 颜色统一从数据表取（唯一色源），不再硬编码
+	EventBus.emit("fx.float_text", {"text": text, "pos": pos, "color": display_color(pickup_type)})
 	queue_free()

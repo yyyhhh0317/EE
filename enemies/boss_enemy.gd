@@ -25,6 +25,8 @@ var _player: Player = null
 var _timer: float = 0.0
 var _attack_cd: float = 0.0
 var _charge_dir: Vector2 = Vector2.ZERO
+var _slow_mult: float = 1.0
+var _slow_timer: float = 0.0
 
 func _ready() -> void:
 	add_to_group("enemy")
@@ -42,6 +44,9 @@ func _ready() -> void:
 
 func _physics_process(delta: float) -> void:
 	_attack_cd = maxf(0.0, _attack_cd - delta)
+	_slow_timer = maxf(0.0, _slow_timer - delta)
+	if _slow_timer <= 0.0:
+		_slow_mult = 1.0
 	match state:
 		State.CHASE:
 			_chase()
@@ -51,6 +56,11 @@ func _physics_process(delta: float) -> void:
 			_charge(delta)
 		State.RECOVER:
 			_recover(delta)
+
+## 减速（惧因子命中效果）：Boss 免疫恐惧，但可被减速（幅度减半）。
+func apply_slow(slow_pct: float, time: float) -> void:
+	_slow_mult = clampf(1.0 - slow_pct * 0.5, 0.3, 1.0)
+	_slow_timer = maxf(_slow_timer, time)
 
 func _find_player() -> Player:
 	var group := get_tree().get_nodes_in_group("player")
@@ -66,7 +76,7 @@ func _chase() -> void:
 	if dist <= melee_range and _attack_cd <= 0.0:
 		_begin_charge(to_player.normalized())
 		return
-	velocity = to_player.normalized() * move_speed
+	velocity = to_player.normalized() * move_speed * _slow_mult
 	move_and_slide()
 
 func _begin_charge(dir: Vector2) -> void:
@@ -88,7 +98,7 @@ func _windup(delta: float) -> void:
 
 func _charge(delta: float) -> void:
 	_timer -= delta
-	velocity = _charge_dir * charge_speed
+	velocity = _charge_dir * charge_speed * _slow_mult
 	move_and_slide()
 	if _player != null and is_instance_valid(_player):
 		if global_position.distance_to(_player.global_position) <= 46.0:

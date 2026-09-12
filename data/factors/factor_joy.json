@@ -1,0 +1,12 @@
+{
+  "id": "factor_joy",
+  "name": "欢愉因子",
+  "emotion": "joy",
+  "color": "#ffd166",
+  "keywords": ["暴击", "丰收", "狂欢"],
+  "modifiers": ["mod_joy_coin"],
+  "per_level_modifiers": ["mod_joy_crit"],
+  "skills": [],
+  "instability_gain": 10.0,
+  "description": "暴击经济流：每一击都可能迸发欢愉，击杀掉落结晶。"
+}

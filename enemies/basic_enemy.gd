@@ -22,6 +22,9 @@ var state: State = State.IDLE
 var _player: Player = null
 var _windup_timer: float = 0.0
 var _attack_cd: float = 0.0
+var _slow_mult: float = 1.0
+var _slow_timer: float = 0.0
+var _fear_timer: float = 0.0
 
 func _ready() -> void:
 	add_to_group("enemy")
@@ -38,6 +41,12 @@ func _ready() -> void:
 
 func _physics_process(delta: float) -> void:
 	_attack_cd = maxf(0.0, _attack_cd - delta)
+	_slow_timer = maxf(0.0, _slow_timer - delta)
+	if _slow_timer <= 0.0:
+		_slow_mult = 1.0
+	else:
+		body_sprite.modulate = Color(0.6, 0.5, 1.0) if _fear_timer > 0.0 else Color(0.7, 0.8, 1.4)
+	_fear_timer = maxf(0.0, _fear_timer - delta)
 	match state:
 		State.IDLE:
 			_idle()
@@ -69,8 +78,25 @@ func _chase(_delta: float) -> void:
 		if _attack_cd <= 0.0:
 			_begin_windup()
 		return
-	velocity = to_player.normalized() * move_speed
+	# 恐惧：逃离玩家；减速：移动放缓
+	var dir := to_player.normalized()
+	if _fear_timer > 0.0:
+		dir = -dir
+	velocity = dir * move_speed * _slow_mult * (0.6 if _fear_timer > 0.0 else 1.0)
 	move_and_slide()
+
+## 减速（惧因子命中效果）：slow_pct 为减速百分比，持续 time 秒。
+func apply_slow(slow_pct: float, time: float) -> void:
+	_slow_mult = clampf(1.0 - slow_pct, 0.2, 1.0)
+	_slow_timer = maxf(_slow_timer, time)
+	body_sprite.modulate = Color(0.7, 0.8, 1.4)
+
+## 恐惧（战栗共鸣）：减速 50% 并逃离玩家 time 秒。
+func apply_fear(time: float) -> void:
+	_slow_mult = minf(_slow_mult, 0.5)
+	_slow_timer = maxf(_slow_timer, time)
+	_fear_timer = time
+	body_sprite.modulate = Color(0.6, 0.5, 1.0)
 
 func _begin_windup() -> void:
 	state = State.WINDUP

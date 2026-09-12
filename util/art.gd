@@ -82,11 +82,25 @@ static func energy(factor_id: String) -> Texture2D:
 	var p: String = FACTOR_PREFIX.get(factor_id, "rage")
 	return tex("res://art/items/energy_%s.png" % p)
 
+static func skill_icon(factor_id: String) -> Texture2D:
+	var p: String = FACTOR_PREFIX.get(factor_id, "")
+	if p == "":
+		return null
+	return tex("res://art/items/skill_%s.png" % p)
+
 static func coin() -> Texture2D:
 	return tex("res://art/items/coin.png")
 
 static func stabilizer() -> Texture2D:
 	return tex("res://art/items/stabilizer.png")
+
+## 通用 items/ 图标入口（HUD 图标 / 进度条 / 记忆碎片等）。
+static func item_icon(name: String) -> Texture2D:
+	return tex("res://art/items/%s.png" % name)
+
+## 环境装饰物（art/env/）。
+static func env_icon(name: String) -> Texture2D:
+	return tex("res://art/env/%s.png" % name)
 
 # ---- 地图 ----
 static func map_texture(factor_id: String) -> Texture2D:

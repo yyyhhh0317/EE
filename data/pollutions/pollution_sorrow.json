@@ -1,0 +1,7 @@
+{
+  "id": "pollution_sorrow",
+  "emotion": "sorrow",
+  "name": "浓雾",
+  "desc": "视野受限：暗雾遮罩 + 加重暗角",
+  "effect": "fog"
+}

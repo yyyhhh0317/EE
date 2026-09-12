@@ -7,21 +7,12 @@ import os
 import colorsys
 from PIL import Image, ImageOps, ImageChops
 
+from factor_colors import PALETTES   # 配色唯一源头（权威源：data/factors/*.json）
+
 SRC = r'D:\yyy\EE\art\maps\base_map.png'
 OUT = r'D:\yyy\EE\art\maps'
 PIXEL_GRID = 128          # target pixel-block grid; smaller = chunkier
 QUANTIZE = 16             # palette size for the regular grades
-
-# 3-tone grades: (shadow/black, mid, highlight/white)  — matched to GDD theme colours.
-PALETTES = {
-    'joy':      ((150, 40, 80),  (255, 190, 90),  (255, 244, 180)),  # 明黄/亮粉
-    'rage':     ((70, 8, 8),     (210, 70, 25),   (255, 150, 60)),   # 暗红/橙
-    'sorrow':   ((26, 40, 62),   (110, 138, 162), (190, 206, 220)),  # 灰蓝
-    'fear':     ((12, 8, 22),    (98, 60, 122),   (170, 120, 190)),  # 深黑/暗紫（稍提亮可读）
-    'disgust':  ((20, 46, 18),   (92, 116, 66),   (168, 152, 164)),  # 绿紫
-    'surprise': ((6, 6, 6),      (110, 110, 110), (255, 255, 255)),  # 高对比白
-    'anxiety':  ((58, 58, 68),   (138, 132, 152), (216, 210, 230)),  # 灰/浅紫
-}
 
 
 def pixelate(img, grid=PIXEL_GRID):

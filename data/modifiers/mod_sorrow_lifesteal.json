@@ -1,0 +1,13 @@
+{
+  "id": "mod_sorrow_lifesteal",
+  "name": "哀恸汲取",
+  "type": "hook",
+  "stat": "",
+  "operation": "add",
+  "value": 1.0,
+  "hooks": ["on_hit"],
+  "duration": 0.0,
+  "max_stacks": 1,
+  "tags": ["sorrow"],
+  "is_negative": false
+}
